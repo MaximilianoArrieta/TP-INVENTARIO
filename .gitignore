@@ -1,0 +1,38 @@
+# Carpetas de compilación de Visual Studio / .NET
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# Archivos de Visual Studio
+.vs/
+*.user
+*.suo
+
+# Carpetas de publicación
+**/bin/Release/**/publish/
+publish/
+PublishProfiles/*.pubxml.user
+
+# Archivos temporales de NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Archivos subidos por usuarios (no hace falta subir imágenes de prueba)
+wwwroot/uploads/*
+!wwwroot/uploads/.gitkeep
+
+# Secretos locales (por si en algún momento usás Secret Manager)
+appsettings.Development.json
+*.pfx
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
