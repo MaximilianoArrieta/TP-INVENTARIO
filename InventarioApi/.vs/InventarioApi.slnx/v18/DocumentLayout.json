@@ -1,0 +1,523 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\inventarioapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:inventarioapi.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\auth\\tokenservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\migrations\\20260921140102_inicialinventario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\extensions\\queryableextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\data\\appdbcontextfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\venta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\proveedor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\producto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\detalleventa.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\detallecompra.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\compra.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\cliente.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\entidades\\categoria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\common\\paginationparams.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\common\\pagedresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\inventarioapi.infrastructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\categoriascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\categoriascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\clientescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\clientescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\comprascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\comprascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\productoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\productoscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\proveedorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\proveedorescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi\\controllers\\ventascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A45AD372-069E-E7FB-B635-46BEB552385C}|InventarioApi.csproj|solutionrelative:controllers\\ventascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{8536123C-5932-3F32-6DF2-E3958CFAE194}|..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.infrastructure\\data\\extensions\\queryableextensions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{06FB5E1B-BC3C-02BA-FF94-799779105CFA}|..\\InventarioApi.Domain\\InventarioApi.Domain.csproj|c:\\users\\maxi\\desktop\\maxi 3\\codigo\\tp inventario\\inventarioapi.domain\\inventarioapi.domain.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "appsettings.Production.json",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\appsettings.Production.json",
+              "RelativeDocumentMoniker": "appsettings.Production.json",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\appsettings.Production.json",
+              "RelativeToolTip": "appsettings.Production.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-22T07:01:28.712Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAzAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:43:07.404Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AppDbContextFactory.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Data\\AppDbContextFactory.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\Data\\AppDbContextFactory.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Data\\AppDbContextFactory.cs",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\Data\\AppDbContextFactory.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T13:52:54.323Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "QueryableExtensions.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Extensions\\QueryableExtensions.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\Extensions\\QueryableExtensions.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Extensions\\QueryableExtensions.cs",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\Extensions\\QueryableExtensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:51:53.81Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "20260921140102_InicialInventario.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Migrations\\20260921140102_InicialInventario.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\Migrations\\20260921140102_InicialInventario.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Migrations\\20260921140102_InicialInventario.cs",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\Migrations\\20260921140102_InicialInventario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:01:02.745Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAADkAAAAAAAAAAAAAAEEAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:15:08.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "InventarioApi.csproj",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\InventarioApi.csproj",
+              "RelativeDocumentMoniker": "InventarioApi.csproj",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\InventarioApi.csproj",
+              "RelativeToolTip": "InventarioApi.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-21T13:59:46.774Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-15T23:37:43.517Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAcwCsAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:14:30.621Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "TokenService.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Auth\\TokenService.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\Auth\\TokenService.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Auth\\TokenService.cs",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\Auth\\TokenService.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAD4vyMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:11:00.358Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-21T20:05:02.156Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Class1.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Class1.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Class1.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Class1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:04:14.396Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Venta.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Venta.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Venta.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Venta.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Venta.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:58.458Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Usuario.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Usuario.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Usuario.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:54.523Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Proveedor.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Proveedor.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Proveedor.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Proveedor.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Proveedor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:49.739Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Producto.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Producto.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Producto.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Producto.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Producto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:42.394Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "DetalleVenta.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\DetalleVenta.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\DetalleVenta.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\DetalleVenta.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\DetalleVenta.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:38.113Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "DetalleCompra.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\DetalleCompra.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\DetalleCompra.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\DetalleCompra.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\DetalleCompra.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:18.976Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Compra.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Compra.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Compra.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Compra.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Compra.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:14.16Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Cliente.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Cliente.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Cliente.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Cliente.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Cliente.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:13:08.713Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "Categoria.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Categoria.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Entidades\\Categoria.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Entidades\\Categoria.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Entidades\\Categoria.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:12:55.493Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "PaginationParams.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Common\\PaginationParams.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Common\\PaginationParams.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Common\\PaginationParams.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Common\\PaginationParams.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:07:50.441Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "PagedResult.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Common\\PagedResult.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\Common\\PagedResult.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\Common\\PagedResult.cs",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\Common\\PagedResult.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:07:20.889Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "InventarioApi.Infrastructure.csproj",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\InventarioApi.Infrastructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-21T13:51:41.801Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "CategoriasController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\CategoriasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\CategoriasController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\CategoriasController.cs",
+              "RelativeToolTip": "Controllers\\CategoriasController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T20:00:44.833Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "ClientesController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ClientesController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ClientesController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ClientesController.cs",
+              "RelativeToolTip": "Controllers\\ClientesController.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAAAxwFIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T20:01:42.871Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "ComprasController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ComprasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ComprasController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ComprasController.cs",
+              "RelativeToolTip": "Controllers\\ComprasController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAE4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:59:01.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "ProductosController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ProductosController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ProductosController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ProductosController.cs",
+              "RelativeToolTip": "Controllers\\ProductosController.cs",
+              "ViewState": "AgIAAE0AAAAAAAAAAAAuwIEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:48:55.642Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "ProveedoresController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ProveedoresController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ProveedoresController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\ProveedoresController.cs",
+              "RelativeToolTip": "Controllers\\ProveedoresController.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAuwBoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T20:01:12.522Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "VentasController.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\VentasController.cs",
+              "RelativeDocumentMoniker": "Controllers\\VentasController.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi\\Controllers\\VentasController.cs",
+              "RelativeToolTip": "Controllers\\VentasController.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAgwFgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T19:59:32.347Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "QueryableExtensions.cs",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Data\\Extensions\\QueryableExtensions.cs",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Infrastructure\\Data\\Extensions\\QueryableExtensions.cs",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Infrastructure\\Data\\Extensions\\QueryableExtensions.cs",
+              "RelativeToolTip": "..\\InventarioApi.Infrastructure\\Data\\Extensions\\QueryableExtensions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T14:10:02.244Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "InventarioApi.Domain.csproj",
+              "DocumentMoniker": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\InventarioApi.Domain.csproj",
+              "RelativeDocumentMoniker": "..\\InventarioApi.Domain\\InventarioApi.Domain.csproj",
+              "ToolTip": "C:\\Users\\Maxi\\Desktop\\Maxi 3\\Codigo\\TP INVENTARIO\\InventarioApi.Domain\\InventarioApi.Domain.csproj",
+              "RelativeToolTip": "..\\InventarioApi.Domain\\InventarioApi.Domain.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-21T14:03:58.661Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

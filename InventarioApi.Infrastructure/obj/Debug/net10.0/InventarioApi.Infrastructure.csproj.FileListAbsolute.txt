@@ -1,0 +1,17 @@
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\bin\Debug\net10.0\InventarioApi.Infrastructure.deps.json
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\bin\Debug\net10.0\InventarioApi.Infrastructure.runtimeconfig.json
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\bin\Debug\net10.0\InventarioApi.Infrastructure.dll
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\bin\Debug\net10.0\InventarioApi.Infrastructure.pdb
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\bin\Debug\net10.0\InventarioApi.Domain.dll
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\bin\Debug\net10.0\InventarioApi.Domain.pdb
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.AssemblyInfo.cs
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\Inventar.1A3D5A06.Up2Date
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.dll
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\refint\InventarioApi.Infrastructure.dll
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.pdb
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\InventarioApi.Infrastructure.genruntimeconfig.cache
+C:\Users\Maxi\Desktop\Maxi 3\Codigo\TP INVENTARIO\InventarioApi.Infrastructure\obj\Debug\net10.0\ref\InventarioApi.Infrastructure.dll

@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <parameter name="IIS Web Application Name" description="" value="maximilianoarrie-001-site1" tags="IisApp">
+    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Users\\Maxi\\Desktop\\Maxi\ 3\\Codigo\\TP\ INVENTARIO\\InventarioApi\\obj\\Release\\net10\.0\\win-x86\\PubTmp\\Out\\$" />
+  </parameter>
+</parameters>
