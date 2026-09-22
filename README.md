@@ -66,4 +66,4 @@ Todos los listados (`GET`) aceptan `?pageNumber=1&pageSize=10` para paginado. La
 > Recordar loguearse primero con `/api/auth/login`, copiar el `token` de la respuesta, y pegarlo en el botón **Authorize** 
 ## Autor
 
-Trabajo práctico desarrollado por Arrieta Maximiliano 2026.
+Trabajo práctico desarrollado por Arrieta Maximiliano y Marco Gonzáles 2026.
