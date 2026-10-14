@@ -1,0 +1,14 @@
+@page "/"
+@attribute [Authorize]
+@inject NavigationManager Nav
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var estado = await AuthState!;
+        var destino = estado.User.IsInRole("Admin") || estado.User.IsInRole("Cajero") ? "caja" : "stock";
+        Nav.NavigateTo(destino, replace: true);
+    }
+}

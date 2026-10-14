@@ -1,0 +1,43 @@
+@inject AuthProvider Auth
+@inject NavigationManager Nav
+
+<div class="marca">
+    <span class="marca-logo" aria-hidden="true"></span>
+    <div class="marca-texto">
+        <strong>Caja y Stock</strong>
+        <small>Punto de venta</small>
+    </div>
+</div>
+
+<nav class="menu">
+    <AuthorizeView Roles="Admin,Cajero">
+        <NavLink class="menu-item" href="caja">Caja</NavLink>
+        <NavLink class="menu-item" href="ventas">@(context.User.IsInRole("Admin") ? "Ventas" : "Mis ventas")</NavLink>
+    </AuthorizeView>
+    <AuthorizeView>
+        <NavLink class="menu-item" href="stock">Stock</NavLink>
+    </AuthorizeView>
+    <AuthorizeView Roles="Admin">
+        <div class="menu-grupo">Administración</div>
+        <NavLink class="menu-item" href="ingreso">Ingreso de mercadería</NavLink>
+        <NavLink class="menu-item" href="reportes">Reportes</NavLink>
+        <NavLink class="menu-item" href="usuarios">Usuarios</NavLink>
+        <NavLink class="menu-item" href="auditoria">Auditoría y errores</NavLink>
+    </AuthorizeView>
+</nav>
+
+<AuthorizeView>
+    <div class="sesion">
+        <div class="sesion-usuario">@context.User.Identity?.Name</div>
+        <div class="sesion-rol">@(context.User.IsInRole("Admin") ? "Administrador" : "Cajero")</div>
+        <button class="boton boton-riel" @onclick="Salir">Cerrar sesión</button>
+    </div>
+</AuthorizeView>
+
+@code {
+    private async Task Salir()
+    {
+        await Auth.CerrarSesionAsync();
+        Nav.NavigateTo("login", replace: true);
+    }
+}

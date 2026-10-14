@@ -1,0 +1,88 @@
+@page "/login"
+@layout LoginLayout
+@inject ApiClient Api
+@inject AuthProvider Auth
+@inject NavigationManager Nav
+
+<PageTitle>Ingresar · Caja y Stock</PageTitle>
+
+<div class="acceso-tarjeta">
+    <div class="marca marca-acceso">
+        <span class="marca-logo" aria-hidden="true"></span>
+        <div class="marca-texto">
+            <strong>Caja y Stock</strong>
+            <small>Punto de venta</small>
+        </div>
+    </div>
+
+    <h1>Ingresar</h1>
+    <p class="acceso-sub">Usá tu usuario de caja o de administrador.</p>
+
+    @if (Expirada)
+    {
+        <div class="alerta alerta-aviso">Tu sesión venció. Volvé a ingresar.</div>
+    }
+    @if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    <form @onsubmit="Ingresar" @onsubmit:preventDefault="true">
+        <label class="campo">
+            <span>Usuario</span>
+            <input @bind="usuario" @bind:event="oninput" autocomplete="username" autofocus />
+        </label>
+        <label class="campo">
+            <span>Contraseña</span>
+            <input type="password" @bind="password" @bind:event="oninput" autocomplete="current-password" />
+        </label>
+        <button type="submit" class="boton boton-primario boton-ancho" disabled="@procesando">
+            @(procesando ? "Ingresando…" : "Ingresar")
+        </button>
+    </form>
+
+    <p class="acceso-pie">¿No tenés usuario? <a href="registro">Crear una cuenta de cajero</a></p>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? VolverA { get; set; }
+    [SupplyParameterFromQuery(Name = "expirada")] public int? ExpiradaMarca { get; set; }
+
+    private bool Expirada => ExpiradaMarca == 1;
+    private string usuario = "";
+    private string password = "";
+    private string? error;
+    private bool procesando;
+
+    private async Task Ingresar()
+    {
+        if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(password))
+        {
+            error = "Completá usuario y contraseña.";
+            return;
+        }
+
+        error = null;
+        procesando = true;
+        try
+        {
+            var respuesta = await Api.PostAsync<LoginRespuesta>("api/auth/login", new { nombreUsuario = usuario.Trim(), password });
+            if (string.IsNullOrEmpty(respuesta?.Token))
+            {
+                error = "El servidor no devolvió un token válido.";
+                return;
+            }
+
+            await Auth.IniciarSesionAsync(respuesta.Token);
+            Nav.NavigateTo(string.IsNullOrWhiteSpace(VolverA) ? "" : VolverA, replace: true);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+}

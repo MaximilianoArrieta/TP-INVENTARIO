@@ -1,0 +1,181 @@
+@page "/usuarios"
+@attribute [Authorize(Roles = "Admin")]
+@inject ApiClient Api
+
+<PageTitle>Usuarios · Caja y Stock</PageTitle>
+
+<header class="encabezado">
+    <h1>Usuarios</h1>
+    <p>Altas, roles y acceso al sistema. Un cambio de rol o de estado se aplica la próxima vez que el usuario ingresa.</p>
+</header>
+
+<section class="panel">
+    <h2 class="panel-titulo">Nuevo usuario</h2>
+    <div class="fila-campos">
+        <label class="campo"><span>Usuario</span><input @bind="nuevo.NombreUsuario" @bind:event="oninput" autocomplete="off" /></label>
+        <label class="campo"><span>Contraseña</span><input type="password" @bind="nuevo.Password" @bind:event="oninput" autocomplete="new-password" /></label>
+        <label class="campo"><span>Email</span><input type="email" @bind="nuevo.Email" @bind:event="oninput" autocomplete="off" /></label>
+        <label class="campo">
+            <span>Rol</span>
+            <select @bind="nuevo.RolId">
+                @foreach (var r in roles)
+                {
+                    <option value="@r.Id">@r.Nombre</option>
+                }
+            </select>
+        </label>
+        <button class="boton boton-primario campo-boton" disabled="@creando" @onclick="Crear">Crear usuario</button>
+    </div>
+    @if (errorAlta != null)
+    {
+        <div class="alerta alerta-error">@errorAlta</div>
+    }
+    @if (exito != null)
+    {
+        <div class="alerta alerta-ok">@exito</div>
+    }
+</section>
+
+@if (error != null)
+{
+    <div class="alerta alerta-error">@error</div>
+}
+
+<table class="tabla">
+    <thead>
+        <tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
+        @if (pagina == null)
+        {
+            <tr><td colspan="4" class="vacio">Cargando…</td></tr>
+        }
+        else
+        {
+            foreach (var u in pagina.Items)
+            {
+                <tr>
+                    <td>@u.NombreUsuario</td>
+                    <td>@(u.Email ?? "—")</td>
+                    <td>
+                        <select value="@u.RolId" @onchange="e => CambiarRol(u, e)" aria-label="Rol de @u.NombreUsuario">
+                            @foreach (var r in roles)
+                            {
+                                <option value="@r.Id">@r.Nombre</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <button class="estado @(u.Activo ? "estado-activo" : "estado-inactivo")" @onclick="() => CambiarEstado(u)"
+                                title="@(u.Activo ? "Desactivar" : "Activar")">
+                            @(u.Activo ? "Activo" : "Inactivo")
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (pagina != null)
+{
+    <Paginador Pagina="numeroPagina" TotalPaginas="pagina.TotalPages" Total="pagina.TotalCount" AlCambiar="IrAPagina" />
+}
+
+@code {
+    private class FormularioUsuario
+    {
+        public string NombreUsuario { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string? Email { get; set; }
+        public int RolId { get; set; } = 2;
+    }
+
+    private List<RolItem> roles = new();
+    private PagedResult<UsuarioItem>? pagina;
+    private int numeroPagina = 1;
+    private FormularioUsuario nuevo = new();
+    private bool creando;
+    private string? error;
+    private string? errorAlta;
+    private string? exito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            roles = await Api.GetAsync<List<RolItem>>("api/usuarios/roles") ?? new();
+            var cajero = roles.FirstOrDefault(r => r.Nombre == "Cajero");
+            if (cajero != null) nuevo.RolId = cajero.Id;
+        }
+        catch (ApiException ex) { error = ex.Message; }
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        try
+        {
+            pagina = await Api.GetAsync<PagedResult<UsuarioItem>>($"api/usuarios?pageNumber={numeroPagina}&pageSize=20");
+        }
+        catch (ApiException ex) { error = ex.Message; }
+    }
+
+    private async Task IrAPagina(int numero)
+    {
+        numeroPagina = numero;
+        await Cargar();
+    }
+
+    private async Task Crear()
+    {
+        errorAlta = null;
+        exito = null;
+        if (string.IsNullOrWhiteSpace(nuevo.NombreUsuario) || nuevo.Password.Length < 6)
+        {
+            errorAlta = "Completá el usuario y una contraseña de al menos 6 caracteres.";
+            return;
+        }
+
+        creando = true;
+        try
+        {
+            await Api.PostAsync("api/usuarios", new
+            {
+                nombreUsuario = nuevo.NombreUsuario.Trim(),
+                password = nuevo.Password,
+                email = string.IsNullOrWhiteSpace(nuevo.Email) ? null : nuevo.Email.Trim(),
+                rolId = nuevo.RolId
+            });
+            exito = $"Usuario {nuevo.NombreUsuario.Trim()} creado.";
+            var rolPorDefecto = nuevo.RolId;
+            nuevo = new FormularioUsuario { RolId = rolPorDefecto };
+            await Cargar();
+        }
+        catch (ApiException ex) { errorAlta = ex.Message; }
+        finally { creando = false; }
+    }
+
+    private async Task CambiarRol(UsuarioItem usuario, ChangeEventArgs e)
+    {
+        error = null;
+        if (!int.TryParse(e.Value?.ToString(), out var rolId) || rolId == usuario.RolId) return;
+        try
+        {
+            await Api.PutAsync($"api/usuarios/{usuario.Id}/rol", new { rolId });
+        }
+        catch (ApiException ex) { error = ex.Message; }
+        await Cargar();
+    }
+
+    private async Task CambiarEstado(UsuarioItem usuario)
+    {
+        error = null;
+        try
+        {
+            await Api.PutAsync($"api/usuarios/{usuario.Id}/estado", new { activo = !usuario.Activo });
+        }
+        catch (ApiException ex) { error = ex.Message; }
+        await Cargar();
+    }
+}

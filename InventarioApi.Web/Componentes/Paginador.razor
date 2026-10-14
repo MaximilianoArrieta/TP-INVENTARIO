@@ -1,0 +1,18 @@
+@if (Total > 0)
+{
+    <div class="paginador">
+        <span class="paginador-total">@Total @(Total == 1 ? "resultado" : "resultados")</span>
+        <button class="boton boton-fantasma boton-chico" disabled="@(Pagina <= 1)" @onclick="() => Ir(Pagina - 1)">Anterior</button>
+        <span>Página @Pagina de @Math.Max(TotalPaginas, 1)</span>
+        <button class="boton boton-fantasma boton-chico" disabled="@(Pagina >= TotalPaginas)" @onclick="() => Ir(Pagina + 1)">Siguiente</button>
+    </div>
+}
+
+@code {
+    [Parameter] public int Pagina { get; set; }
+    [Parameter] public int TotalPaginas { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public EventCallback<int> AlCambiar { get; set; }
+
+    private Task Ir(int pagina) => AlCambiar.InvokeAsync(pagina);
+}

@@ -1,0 +1,380 @@
+@page "/stock"
+@attribute [Authorize]
+@implements IDisposable
+@inject ApiClient Api
+
+<PageTitle>Stock · Caja y Stock</PageTitle>
+
+<header class="encabezado encabezado-con-accion">
+    <div>
+        <h1>Stock</h1>
+        <p>Existencias actualizadas de cada producto. Se modifican solas con cada ingreso y cada venta.</p>
+    </div>
+    @if (esAdmin)
+    {
+        <div class="acciones">
+            <button class="boton boton-fantasma" @onclick="AbrirNuevaCategoria">Nueva categoría</button>
+            <button class="boton boton-primario" @onclick="() => AbrirEditor(null)">Nuevo producto</button>
+        </div>
+    }
+</header>
+
+<div class="filtros">
+    <input class="buscador-input buscador-chico" placeholder="Buscar por nombre…" value="@busqueda" @oninput="AlEscribir" aria-label="Buscar por nombre" />
+    <select value="@categoriaId" @onchange="CambiarCategoria" aria-label="Filtrar por categoría">
+        <option value="0">Todas las categorías</option>
+        @foreach (var c in categorias)
+        {
+            <option value="@c.Id">@c.Nombre</option>
+        }
+    </select>
+</div>
+
+@if (error != null)
+{
+    <div class="alerta alerta-error">@error</div>
+}
+
+<table class="tabla">
+    <thead>
+        <tr>
+            <th class="col-imagen"></th>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th class="num">Precio</th>
+            <th class="num">Stock</th>
+            @if (esAdmin)
+            {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (pagina == null)
+        {
+            <tr><td colspan="6" class="vacio">Cargando…</td></tr>
+        }
+        else if (pagina.Items.Count == 0)
+        {
+            <tr><td colspan="6" class="vacio">No hay productos para mostrar.</td></tr>
+        }
+        else
+        {
+            foreach (var p in pagina.Items)
+            {
+                <tr>
+                    <td class="col-imagen">
+                        @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                        {
+                            <img class="miniatura" src="@Api.UrlArchivo(p.ImagenUrl)" alt="" />
+                        }
+                    </td>
+                    <td>
+                        <div>@p.Nombre</div>
+                        @if (!string.IsNullOrEmpty(p.Descripcion))
+                        {
+                            <small class="tenue">@p.Descripcion</small>
+                        }
+                    </td>
+                    <td>@p.Categoria</td>
+                    <td class="num">@Formato.Moneda(p.Precio)</td>
+                    <td class="num">
+                        <span class="stock @ClaseStock(p.Stock)">@p.Stock</span>
+                        @if (p.Stock == 0)
+                        {
+                            <small class="stock-nota">Sin stock</small>
+                        }
+                        else if (p.Stock <= 5)
+                        {
+                            <small class="stock-nota">Bajo</small>
+                        }
+                    </td>
+                    @if (esAdmin)
+                    {
+                        <td class="num"><button class="boton-link" @onclick="() => AbrirEditor(p)">Editar</button></td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (pagina != null)
+{
+    <Paginador Pagina="numeroPagina" TotalPaginas="pagina.TotalPages" Total="pagina.TotalCount" AlCambiar="IrAPagina" />
+}
+
+@if (editor != null)
+{
+    <div class="modal-fondo">
+        <div class="modal-caja" role="dialog" aria-labelledby="editor-titulo">
+            <h2 id="editor-titulo">@(editor.Id == 0 ? "Nuevo producto" : "Editar producto")</h2>
+            @if (errorEditor != null)
+            {
+                <div class="alerta alerta-error">@errorEditor</div>
+            }
+            <label class="campo"><span>Nombre</span><input @bind="editor.Nombre" @bind:event="oninput" /></label>
+            <label class="campo"><span>Descripción</span><input @bind="editor.Descripcion" @bind:event="oninput" /></label>
+            <div class="fila-campos">
+                <label class="campo">
+                    <span>Precio de venta</span>
+                    <input type="number" min="0" step="0.01" @bind="editor.Precio" @bind:event="oninput" />
+                </label>
+                <label class="campo">
+                    <span>Categoría</span>
+                    <select @bind="editor.CategoriaId">
+                        <option value="0">Elegí una categoría…</option>
+                        @foreach (var c in categorias)
+                        {
+                            <option value="@c.Id">@c.Nombre</option>
+                        }
+                    </select>
+                </label>
+            </div>
+            <label class="campo">
+                <span>Imagen (opcional: JPG, PNG o WEBP, hasta 5 MB)</span>
+                <InputFile OnChange="ElegirImagen" accept=".jpg,.jpeg,.png,.webp" />
+            </label>
+            @if (editor.Id != 0)
+            {
+                <p class="nota">El stock no se edita acá: cambia con los ingresos de mercadería y las ventas.</p>
+            }
+            <div class="modal-acciones">
+                @if (editor.Id != 0)
+                {
+                    <button class="boton boton-peligro" @onclick="DarDeBaja" disabled="@guardando">
+                        @(confirmandoBaja ? "Confirmar baja" : "Dar de baja")
+                    </button>
+                }
+                <span class="espaciador"></span>
+                <button class="boton boton-fantasma" @onclick="CerrarEditor">Cancelar</button>
+                <button class="boton boton-primario" @onclick="Guardar" disabled="@guardando">
+                    @(guardando ? "Guardando…" : "Guardar")
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (nuevaCategoria != null)
+{
+    <div class="modal-fondo">
+        <div class="modal-caja modal-chico" role="dialog" aria-labelledby="categoria-titulo">
+            <h2 id="categoria-titulo">Nueva categoría</h2>
+            @if (errorCategoria != null)
+            {
+                <div class="alerta alerta-error">@errorCategoria</div>
+            }
+            <label class="campo"><span>Nombre</span><input @bind="nuevaCategoria.Nombre" @bind:event="oninput" /></label>
+            <label class="campo"><span>Descripción</span><input @bind="nuevaCategoria.Descripcion" @bind:event="oninput" /></label>
+            <div class="modal-acciones">
+                <button class="boton boton-fantasma" @onclick="() => nuevaCategoria = null">Cancelar</button>
+                <button class="boton boton-primario" @onclick="GuardarCategoria">Guardar categoría</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private class EditorProducto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string? Descripcion { get; set; }
+        public decimal Precio { get; set; }
+        public int CategoriaId { get; set; }
+    }
+
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool esAdmin;
+    private PagedResult<ProductoItem>? pagina;
+    private int numeroPagina = 1;
+    private string busqueda = "";
+    private int categoriaId;
+    private List<CategoriaItem> categorias = new();
+    private string? error;
+    private CancellationTokenSource? demora;
+
+    private EditorProducto? editor;
+    private IBrowserFile? imagen;
+    private string? errorEditor;
+    private bool guardando;
+    private bool confirmandoBaja;
+
+    private CategoriaItem? nuevaCategoria;
+    private string? errorCategoria;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var estado = await AuthState!;
+        esAdmin = estado.User.IsInRole("Admin");
+        await CargarCategorias();
+        await Cargar();
+    }
+
+    private static string ClaseStock(int stock) =>
+        stock == 0 ? "stock-cero" : stock <= 5 ? "stock-bajo" : "stock-ok";
+
+    private async Task CargarCategorias()
+    {
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<CategoriaItem>>("api/categorias?pageSize=50");
+            categorias = r?.Items ?? new();
+        }
+        catch (ApiException ex) { error = ex.Message; }
+    }
+
+    private async Task Cargar()
+    {
+        error = null;
+        try
+        {
+            var url = $"api/productos?pageNumber={numeroPagina}&pageSize=15&nombre={Uri.EscapeDataString(busqueda.Trim())}";
+            if (categoriaId != 0) url += $"&categoriaId={categoriaId}";
+            pagina = await Api.GetAsync<PagedResult<ProductoItem>>(url);
+        }
+        catch (ApiException ex) { error = ex.Message; }
+    }
+
+    private async Task AlEscribir(ChangeEventArgs e)
+    {
+        busqueda = e.Value?.ToString() ?? "";
+        demora?.Cancel();
+        demora = new CancellationTokenSource();
+        try { await Task.Delay(300, demora.Token); }
+        catch (TaskCanceledException) { return; }
+        numeroPagina = 1;
+        await Cargar();
+    }
+
+    private async Task CambiarCategoria(ChangeEventArgs e)
+    {
+        categoriaId = int.TryParse(e.Value?.ToString(), out var id) ? id : 0;
+        numeroPagina = 1;
+        await Cargar();
+    }
+
+    private async Task IrAPagina(int numero)
+    {
+        numeroPagina = numero;
+        await Cargar();
+    }
+
+    // ---- Alta y edición (solo Admin) ----
+
+    private void AbrirEditor(ProductoItem? p)
+    {
+        errorEditor = null;
+        imagen = null;
+        confirmandoBaja = false;
+        editor = p == null
+            ? new EditorProducto()
+            : new EditorProducto { Id = p.Id, Nombre = p.Nombre, Descripcion = p.Descripcion, Precio = p.Precio, CategoriaId = p.CategoriaId };
+    }
+
+    private void CerrarEditor()
+    {
+        editor = null;
+        imagen = null;
+    }
+
+    private void ElegirImagen(InputFileChangeEventArgs e) => imagen = e.File;
+
+    private async Task Guardar()
+    {
+        if (editor == null) return;
+        if (string.IsNullOrWhiteSpace(editor.Nombre) || editor.Precio <= 0 || editor.CategoriaId == 0)
+        {
+            errorEditor = "Completá el nombre, un precio mayor a cero y la categoría.";
+            return;
+        }
+
+        guardando = true;
+        errorEditor = null;
+        try
+        {
+            var cuerpo = new
+            {
+                nombre = editor.Nombre.Trim(),
+                descripcion = string.IsNullOrWhiteSpace(editor.Descripcion) ? null : editor.Descripcion.Trim(),
+                precio = editor.Precio,
+                categoriaId = editor.CategoriaId
+            };
+
+            var id = editor.Id;
+            if (id == 0)
+            {
+                var creado = await Api.PostAsync<ProductoItem>("api/productos", cuerpo);
+                id = creado?.Id ?? 0;
+            }
+            else
+            {
+                await Api.PutAsync($"api/productos/{id}", cuerpo);
+            }
+
+            if (imagen != null && id != 0)
+                await Api.SubirArchivoAsync($"api/productos/{id}/imagen", imagen);
+
+            CerrarEditor();
+            await Cargar();
+        }
+        catch (ApiException ex) { errorEditor = ex.Message; }
+        finally { guardando = false; }
+    }
+
+    private async Task DarDeBaja()
+    {
+        if (editor == null || editor.Id == 0) return;
+        if (!confirmandoBaja)
+        {
+            confirmandoBaja = true;
+            return;
+        }
+
+        guardando = true;
+        try
+        {
+            await Api.DeleteAsync($"api/productos/{editor.Id}");
+            CerrarEditor();
+            await Cargar();
+        }
+        catch (ApiException ex) { errorEditor = ex.Message; }
+        finally { guardando = false; }
+    }
+
+    private void AbrirNuevaCategoria()
+    {
+        errorCategoria = null;
+        nuevaCategoria = new CategoriaItem();
+    }
+
+    private async Task GuardarCategoria()
+    {
+        if (nuevaCategoria == null) return;
+        if (string.IsNullOrWhiteSpace(nuevaCategoria.Nombre))
+        {
+            errorCategoria = "El nombre es obligatorio.";
+            return;
+        }
+
+        try
+        {
+            await Api.PostAsync("api/categorias", new
+            {
+                nombre = nuevaCategoria.Nombre.Trim(),
+                descripcion = string.IsNullOrWhiteSpace(nuevaCategoria.Descripcion) ? null : nuevaCategoria.Descripcion.Trim()
+            });
+            nuevaCategoria = null;
+            await CargarCategorias();
+        }
+        catch (ApiException ex) { errorCategoria = ex.Message; }
+    }
+
+    public void Dispose()
+    {
+        demora?.Cancel();
+        demora?.Dispose();
+    }
+}

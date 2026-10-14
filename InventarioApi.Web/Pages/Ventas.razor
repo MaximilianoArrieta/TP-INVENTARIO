@@ -1,0 +1,151 @@
+@page "/ventas"
+@attribute [Authorize(Roles = "Admin,Cajero")]
+@inject ApiClient Api
+
+<PageTitle>Ventas · Caja y Stock</PageTitle>
+
+<header class="encabezado">
+    <h1>@(esAdmin ? "Ventas" : "Mis ventas")</h1>
+    <p>@(esAdmin ? "Todas las ventas registradas en las cajas." : "Las ventas que registraste con tu usuario.")</p>
+</header>
+
+<div class="filtros">
+    <label class="campo campo-en-linea">
+        <span>Desde</span>
+        <input type="date" @bind="desde" @bind:after="Filtrar" />
+    </label>
+    <label class="campo campo-en-linea">
+        <span>Hasta</span>
+        <input type="date" @bind="hasta" @bind:after="Filtrar" />
+    </label>
+    @if (desde.HasValue || hasta.HasValue)
+    {
+        <button class="boton-link" @onclick="LimpiarFiltros">Quitar filtro de fechas</button>
+    }
+</div>
+
+@if (error != null)
+{
+    <div class="alerta alerta-error">@error</div>
+}
+
+<table class="tabla">
+    <thead>
+        <tr>
+            <th>N.º</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            @if (esAdmin)
+            {
+                <th>Cajero</th>
+            }
+            <th class="num">Artículos</th>
+            <th class="num">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (pagina == null)
+        {
+            <tr><td colspan="6" class="vacio">Cargando…</td></tr>
+        }
+        else if (pagina.Items.Count == 0)
+        {
+            <tr><td colspan="6" class="vacio">No hay ventas en este período.</td></tr>
+        }
+        else
+        {
+            foreach (var v in pagina.Items)
+            {
+                <tr class="fila-clic" @onclick="() => Alternar(v.Id)">
+                    <td>@v.Id</td>
+                    <td>@Formato.Fecha(v.Fecha)</td>
+                    <td>@v.Cliente</td>
+                    @if (esAdmin)
+                    {
+                        <td>@v.Usuario</td>
+                    }
+                    <td class="num">@(v.Detalles.Sum(d => d.Cantidad))</td>
+                    <td class="num"><strong>@Formato.Moneda(v.Total)</strong></td>
+                </tr>
+                if (abiertas.Contains(v.Id))
+                {
+                    <tr class="fila-detalle">
+                        <td colspan="6">
+                            <table class="tabla-interna">
+                                @foreach (var d in v.Detalles)
+                                {
+                                    <tr>
+                                        <td>@d.Producto</td>
+                                        <td class="num">@d.Cantidad × @Formato.Moneda(d.PrecioUnitario)</td>
+                                        <td class="num">@Formato.Moneda(d.Subtotal)</td>
+                                    </tr>
+                                }
+                            </table>
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+
+@if (pagina != null)
+{
+    <Paginador Pagina="numeroPagina" TotalPaginas="pagina.TotalPages" Total="pagina.TotalCount" AlCambiar="IrAPagina" />
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool esAdmin;
+    private PagedResult<VentaVista>? pagina;
+    private int numeroPagina = 1;
+    private DateTime? desde;
+    private DateTime? hasta;
+    private readonly HashSet<int> abiertas = new();
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var estado = await AuthState!;
+        esAdmin = estado.User.IsInRole("Admin");
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        error = null;
+        try
+        {
+            var url = $"api/ventas?pageNumber={numeroPagina}&pageSize=15";
+            if (desde.HasValue) url += $"&desde={desde.Value:yyyy-MM-dd}";
+            if (hasta.HasValue) url += $"&hasta={hasta.Value:yyyy-MM-dd}";
+            pagina = await Api.GetAsync<PagedResult<VentaVista>>(url);
+        }
+        catch (ApiException ex) { error = ex.Message; }
+    }
+
+    private async Task Filtrar()
+    {
+        numeroPagina = 1;
+        await Cargar();
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        desde = null;
+        hasta = null;
+        await Filtrar();
+    }
+
+    private async Task IrAPagina(int numero)
+    {
+        numeroPagina = numero;
+        await Cargar();
+    }
+
+    private void Alternar(int id)
+    {
+        if (!abiertas.Remove(id)) abiertas.Add(id);
+    }
+}

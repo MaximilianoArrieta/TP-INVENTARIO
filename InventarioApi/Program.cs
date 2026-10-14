@@ -1,22 +1,36 @@
 using System.Text;
+using System.Text.Json.Serialization;
+using InventarioApi.Api.Middleware;
+using InventarioApi.Api.Services;
 using InventarioApi.Infrastructure.Auth;
 using InventarioApi.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DbContext
+// Usuario actual (para la auditoría) + DbContext
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Servicios propios
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<ReportesService>();
+builder.Services.AddScoped<CorreoService>();
+builder.Services.AddHttpClient();
+
+// QuestPDF (reportes): licencia gratuita para uso académico / organizaciones chicas
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Controladores + Swagger
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    // Red de seguridad: si algún endpoint devuelve entidades con relaciones cruzadas, no explota
+    .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -68,6 +82,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Datos iniciales: cliente "Consumidor Final" y primer administrador
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        await DatosIniciales.CargarAsync(db, app.Configuration);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "No se pudieron cargar los datos iniciales (¿faltan aplicar migraciones?).");
+    }
+}
+
+// Primero de todo: cualquier error que ocurra más adelante queda registrado
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();

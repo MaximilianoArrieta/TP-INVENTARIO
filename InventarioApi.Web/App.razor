@@ -1,0 +1,24 @@
+<Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    <RedirectToLogin />
+                }
+                else
+                {
+                    <div class="sin-permiso">
+                        <h1>Sin permiso</h1>
+                        <p>Tu usuario no tiene acceso a esta sección. Si lo necesitás, pedíselo a un administrador.</p>
+                        <a class="boton boton-fantasma" href="caja">Volver a la caja</a>
+                    </div>
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <p class="cargando">Verificando la sesión…</p>
+            </Authorizing>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+</Router>

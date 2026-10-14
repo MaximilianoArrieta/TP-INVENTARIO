@@ -2,4 +2,5 @@
   <Project Path="../InventarioApi.Domain/InventarioApi.Domain.csproj" />
   <Project Path="../InventarioApi.Infrastructure/InventarioApi.Infrastructure.csproj" />
   <Project Path="InventarioApi.csproj" />
+  <Project Path="../InventarioApi.Web/InventarioApi.Web.csproj" />
 </Solution>
