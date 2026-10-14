@@ -18,7 +18,7 @@ public class TokenService
         {
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
             new Claim(ClaimTypes.Name, usuario.NombreUsuario),
-            new Claim(ClaimTypes.Role, usuario.Rol)
+            new Claim(ClaimTypes.Role, usuario.Rol!.Nombre)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));

@@ -1,0 +1,92 @@
+@page "/registro"
+@layout LoginLayout
+@inject ApiClient Api
+
+<PageTitle>Crear cuenta · Caja y Stock</PageTitle>
+
+<div class="acceso-tarjeta">
+    <h1>Crear cuenta de cajero</h1>
+    <p class="acceso-sub">Las cuentas nuevas tienen rol Cajero. Un administrador puede cambiar el rol después.</p>
+
+    @if (creado)
+    {
+        <div class="alerta alerta-ok">Cuenta creada. Ya podés ingresar con tu usuario.</div>
+        <a class="boton boton-primario boton-ancho" href="login">Ir a ingresar</a>
+    }
+    else
+    {
+        @if (error != null)
+        {
+            <div class="alerta alerta-error">@error</div>
+        }
+
+        <form @onsubmit="Registrar" @onsubmit:preventDefault="true">
+            <label class="campo">
+                <span>Usuario</span>
+                <input @bind="usuario" @bind:event="oninput" autocomplete="username" autofocus />
+            </label>
+            <label class="campo">
+                <span>Email (opcional, para recibir reportes)</span>
+                <input type="email" @bind="email" @bind:event="oninput" autocomplete="email" />
+            </label>
+            <label class="campo">
+                <span>Contraseña (mínimo 6 caracteres)</span>
+                <input type="password" @bind="password" @bind:event="oninput" autocomplete="new-password" />
+            </label>
+            <label class="campo">
+                <span>Repetir contraseña</span>
+                <input type="password" @bind="repetir" @bind:event="oninput" autocomplete="new-password" />
+            </label>
+            <button type="submit" class="boton boton-primario boton-ancho" disabled="@procesando">
+                @(procesando ? "Creando…" : "Crear cuenta")
+            </button>
+        </form>
+    }
+
+    <p class="acceso-pie"><a href="login">Volver a ingresar</a></p>
+</div>
+
+@code {
+    private string usuario = "";
+    private string email = "";
+    private string password = "";
+    private string repetir = "";
+    private string? error;
+    private bool procesando;
+    private bool creado;
+
+    private async Task Registrar()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(usuario) || password.Length < 6)
+        {
+            error = "Completá el usuario y una contraseña de al menos 6 caracteres.";
+            return;
+        }
+        if (password != repetir)
+        {
+            error = "Las contraseñas no coinciden.";
+            return;
+        }
+
+        procesando = true;
+        try
+        {
+            await Api.PostAsync("api/auth/registro", new
+            {
+                nombreUsuario = usuario.Trim(),
+                password,
+                email = string.IsNullOrWhiteSpace(email) ? null : email.Trim()
+            });
+            creado = true;
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+}

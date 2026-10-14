@@ -22,7 +22,42 @@ namespace InventarioApi.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Categoria", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Auditoria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Detalle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Entidad")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EntidadId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Auditorias");
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Categoria", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -35,14 +70,17 @@ namespace InventarioApi.Infrastructure.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
 
                     b.ToTable("Categorias");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Cliente", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Cliente", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +110,7 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.ToTable("Clientes");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Compra", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Compra", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -86,9 +124,6 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Property<int>("ProveedorId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
 
@@ -101,7 +136,7 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.ToTable("Compras");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.DetalleCompra", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.DetalleCompra", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -123,14 +158,15 @@ namespace InventarioApi.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CompraId");
-
                     b.HasIndex("ProductoId");
+
+                    b.HasIndex("CompraId", "ProductoId")
+                        .IsUnique();
 
                     b.ToTable("DetalleCompras");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.DetalleVenta", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.DetalleVenta", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,12 +190,44 @@ namespace InventarioApi.Infrastructure.Migrations
 
                     b.HasIndex("ProductoId");
 
-                    b.HasIndex("VentaId");
+                    b.HasIndex("VentaId", "ProductoId")
+                        .IsUnique();
 
                     b.ToTable("DetalleVentas");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Producto", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.LogError", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Detalle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Ruta")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("LogErrores");
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Producto", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -196,7 +264,7 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.ToTable("Productos");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Proveedor", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Proveedor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -225,7 +293,39 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.ToTable("Proveedores");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Usuario", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Rol", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Cajero"
+                        });
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Usuario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -236,6 +336,9 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NombreUsuario")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -244,19 +347,20 @@ namespace InventarioApi.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Rol")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("RolId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NombreUsuario")
                         .IsUnique();
 
+                    b.HasIndex("RolId");
+
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Venta", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Venta", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -270,9 +374,6 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
 
@@ -285,15 +386,25 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.ToTable("Ventas");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Compra", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Auditoria", b =>
                 {
-                    b.HasOne("InventarioApi.Domain.Entidades.Proveedor", "Proveedor")
+                    b.HasOne("InventarioApi.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Compra", b =>
+                {
+                    b.HasOne("InventarioApi.Domain.Entities.Proveedor", "Proveedor")
                         .WithMany("Compras")
                         .HasForeignKey("ProveedorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InventarioApi.Domain.Entidades.Usuario", "Usuario")
+                    b.HasOne("InventarioApi.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -304,15 +415,15 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.DetalleCompra", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.DetalleCompra", b =>
                 {
-                    b.HasOne("InventarioApi.Domain.Entidades.Compra", "Compra")
+                    b.HasOne("InventarioApi.Domain.Entities.Compra", "Compra")
                         .WithMany("Detalles")
                         .HasForeignKey("CompraId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InventarioApi.Domain.Entidades.Producto", "Producto")
+                    b.HasOne("InventarioApi.Domain.Entities.Producto", "Producto")
                         .WithMany("DetallesCompra")
                         .HasForeignKey("ProductoId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -323,15 +434,15 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Producto");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.DetalleVenta", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.DetalleVenta", b =>
                 {
-                    b.HasOne("InventarioApi.Domain.Entidades.Producto", "Producto")
+                    b.HasOne("InventarioApi.Domain.Entities.Producto", "Producto")
                         .WithMany("DetallesVenta")
                         .HasForeignKey("ProductoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("InventarioApi.Domain.Entidades.Venta", "Venta")
+                    b.HasOne("InventarioApi.Domain.Entities.Venta", "Venta")
                         .WithMany("Detalles")
                         .HasForeignKey("VentaId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -342,9 +453,19 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Venta");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Producto", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.LogError", b =>
                 {
-                    b.HasOne("InventarioApi.Domain.Entidades.Categoria", "Categoria")
+                    b.HasOne("InventarioApi.Domain.Entities.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Producto", b =>
+                {
+                    b.HasOne("InventarioApi.Domain.Entities.Categoria", "Categoria")
                         .WithMany("Productos")
                         .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -353,15 +474,26 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Categoria");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Venta", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Usuario", b =>
                 {
-                    b.HasOne("InventarioApi.Domain.Entidades.Cliente", "Cliente")
+                    b.HasOne("InventarioApi.Domain.Entities.Rol", "Rol")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("RolId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Rol");
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Venta", b =>
+                {
+                    b.HasOne("InventarioApi.Domain.Entities.Cliente", "Cliente")
                         .WithMany("Ventas")
                         .HasForeignKey("ClienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("InventarioApi.Domain.Entidades.Usuario", "Usuario")
+                    b.HasOne("InventarioApi.Domain.Entities.Usuario", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -372,34 +504,39 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Categoria", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Productos");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Cliente", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Cliente", b =>
                 {
                     b.Navigation("Ventas");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Compra", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Compra", b =>
                 {
                     b.Navigation("Detalles");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Producto", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Producto", b =>
                 {
                     b.Navigation("DetallesCompra");
 
                     b.Navigation("DetallesVenta");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Proveedor", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Proveedor", b =>
                 {
                     b.Navigation("Compras");
                 });
 
-            modelBuilder.Entity("InventarioApi.Domain.Entidades.Venta", b =>
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Rol", b =>
+                {
+                    b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Venta", b =>
                 {
                     b.Navigation("Detalles");
                 });

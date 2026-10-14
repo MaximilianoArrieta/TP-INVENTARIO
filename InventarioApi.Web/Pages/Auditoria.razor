@@ -1,0 +1,211 @@
+@page "/auditoria"
+@attribute [Authorize(Roles = "Admin")]
+@inject ApiClient Api
+
+<PageTitle>Auditoría y errores · Caja y Stock</PageTitle>
+
+<header class="encabezado">
+    <h1>Auditoría y errores</h1>
+    <p>Cada alta, modificación, baja e ingreso al sistema queda registrado con su usuario y fecha. Los errores inesperados también.</p>
+</header>
+
+<div class="pestanias" role="tablist">
+    <button role="tab" aria-selected="@(pestania == "movimientos" ? "true" : "false")" class="pestania @(pestania == "movimientos" ? "pestania-activa" : "")"
+            @onclick="() => CambiarPestania(true)">Movimientos</button>
+    <button role="tab" aria-selected="@(pestania == "errores" ? "true" : "false")" class="pestania @(pestania == "errores" ? "pestania-activa" : "")"
+            @onclick="() => CambiarPestania(false)">Errores</button>
+</div>
+
+@if (error != null)
+{
+    <div class="alerta alerta-error">@error</div>
+}
+@if (aviso != null)
+{
+    <div class="alerta alerta-aviso">@aviso</div>
+}
+
+@if (pestania == "movimientos")
+{
+    <div class="filtros">
+        <select @bind="entidad" @bind:after="Filtrar" aria-label="Entidad">
+            <option value="">Todas las entidades</option>
+            @foreach (var e in Entidades)
+            {
+                <option value="@e">@e</option>
+            }
+        </select>
+        <select @bind="accion" @bind:after="Filtrar" aria-label="Acción">
+            <option value="">Todas las acciones</option>
+            @foreach (var a in Acciones)
+            {
+                <option value="@a">@a</option>
+            }
+        </select>
+        <label class="campo campo-en-linea"><span>Desde</span><input type="date" @bind="desde" @bind:after="Filtrar" /></label>
+        <label class="campo campo-en-linea"><span>Hasta</span><input type="date" @bind="hasta" @bind:after="Filtrar" /></label>
+    </div>
+
+    <table class="tabla tabla-compacta">
+        <thead>
+            <tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th></tr>
+        </thead>
+        <tbody>
+            @if (movimientos == null)
+            {
+                <tr><td colspan="5" class="vacio">Cargando…</td></tr>
+            }
+            else if (movimientos.Items.Count == 0)
+            {
+                <tr><td colspan="5" class="vacio">No hay movimientos con esos filtros.</td></tr>
+            }
+            else
+            {
+                foreach (var m in movimientos.Items)
+                {
+                    <tr>
+                        <td class="sin-corte">@Formato.Fecha(m.Fecha)</td>
+                        <td>@(m.Usuario ?? "—")</td>
+                        <td><span class="accion accion-@m.Accion.ToLowerInvariant()">@m.Accion</span></td>
+                        <td class="sin-corte">@m.Entidad @(m.EntidadId.HasValue ? $"#{m.EntidadId}" : "")</td>
+                        <td class="detalle-auditoria">@m.Detalle</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    @if (movimientos != null)
+    {
+        <Paginador Pagina="paginaMovimientos" TotalPaginas="movimientos.TotalPages" Total="movimientos.TotalCount" AlCambiar="IrAPaginaMovimientos" />
+    }
+}
+else
+{
+    <div class="filtros">
+        <button class="boton boton-fantasma" @onclick="GenerarErrorDePrueba" disabled="@generando">Generar error de prueba</button>
+        <span class="tenue">Provoca un error a propósito para comprobar que queda registrado.</span>
+    </div>
+
+    @if (errores == null)
+    {
+        <p class="vacio">Cargando…</p>
+    }
+    else if (errores.Items.Count == 0)
+    {
+        <p class="vacio">No hay errores registrados.</p>
+    }
+    else
+    {
+        <div class="lista-errores">
+            @foreach (var e in errores.Items)
+            {
+                <details class="error-item">
+                    <summary>
+                        <span class="error-codigo">N.º @e.Id</span>
+                        <span class="sin-corte">@Formato.Fecha(e.Fecha)</span>
+                        <span class="error-mensaje">@e.Mensaje</span>
+                        <span class="tenue">@e.Ruta · @(e.Usuario ?? "sin usuario")</span>
+                    </summary>
+                    <pre>@e.Detalle</pre>
+                </details>
+            }
+        </div>
+        <Paginador Pagina="paginaErrores" TotalPaginas="errores.TotalPages" Total="errores.TotalCount" AlCambiar="IrAPaginaErrores" />
+    }
+}
+
+@code {
+    private static readonly string[] Entidades =
+        { "Producto", "Categoria", "Venta", "DetalleVenta", "Compra", "DetalleCompra", "Cliente", "Proveedor", "Usuario", "Reporte" };
+    private static readonly string[] Acciones = { "Crear", "Modificar", "Eliminar", "Login", "LoginFallido", "GenerarReporte", "EnviarReporte" };
+
+    private string pestania = "movimientos";
+    private string? error;
+    private string? aviso;
+
+    private PagedResult<AuditoriaItem>? movimientos;
+    private int paginaMovimientos = 1;
+    private string entidad = "";
+    private string accion = "";
+    private DateTime? desde;
+    private DateTime? hasta;
+
+    private PagedResult<ErrorItem>? errores;
+    private int paginaErrores = 1;
+    private bool generando;
+
+    protected override async Task OnInitializedAsync() => await CargarMovimientos();
+
+    private async Task CambiarPestania(bool verMovimientos)
+    {
+        aviso = null;
+        error = null;
+        pestania = verMovimientos ? "movimientos" : "errores";
+        if (verMovimientos) await CargarMovimientos();
+        else await CargarErrores();
+    }
+
+    private async Task CargarMovimientos()
+    {
+        try
+        {
+            var url = $"api/auditoria?pageNumber={paginaMovimientos}&pageSize=25";
+            if (!string.IsNullOrEmpty(entidad)) url += $"&entidad={entidad}";
+            if (!string.IsNullOrEmpty(accion)) url += $"&accion={accion}";
+            if (desde.HasValue) url += $"&desde={desde.Value:yyyy-MM-dd}";
+            if (hasta.HasValue) url += $"&hasta={hasta.Value:yyyy-MM-dd}";
+            movimientos = await Api.GetAsync<PagedResult<AuditoriaItem>>(url);
+        }
+        catch (ApiException ex) { error = ex.Message; }
+    }
+
+    private async Task Filtrar()
+    {
+        paginaMovimientos = 1;
+        await CargarMovimientos();
+    }
+
+    private async Task IrAPaginaMovimientos(int numero)
+    {
+        paginaMovimientos = numero;
+        await CargarMovimientos();
+    }
+
+    private async Task CargarErrores()
+    {
+        try
+        {
+            errores = await Api.GetAsync<PagedResult<ErrorItem>>($"api/auditoria/errores?pageNumber={paginaErrores}&pageSize=15");
+        }
+        catch (ApiException ex) { error = ex.Message; }
+    }
+
+    private async Task IrAPaginaErrores(int numero)
+    {
+        paginaErrores = numero;
+        await CargarErrores();
+    }
+
+    private async Task GenerarErrorDePrueba()
+    {
+        generando = true;
+        aviso = null;
+        try
+        {
+            await Api.GetAsync<object>("api/auditoria/errores/prueba");
+        }
+        catch (ApiException ex)
+        {
+            // Lo esperado: la API responde 500 y devuelve el número de error registrado
+            aviso = $"Error de prueba generado. Respuesta de la API: {ex.Message}";
+        }
+        finally
+        {
+            generando = false;
+        }
+
+        paginaErrores = 1;
+        await CargarErrores();
+    }
+}

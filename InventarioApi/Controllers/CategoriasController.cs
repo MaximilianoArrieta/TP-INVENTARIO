@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InventarioApi.Infrastructure.Data;
@@ -21,7 +21,8 @@ public class CategoriasController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Listar([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var query = _db.Categorias.OrderBy(c => c.Nombre);
+        var query = _db.Categorias.OrderBy(c => c.Nombre)
+            .Select(c => new { c.Id, c.Nombre, c.Descripcion });
         var resultado = await query.ToPagedResultAsync(pageNumber, pageSize);
         return Ok(resultado);
     }
@@ -38,10 +39,16 @@ public class CategoriasController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Crear(CategoriaDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Nombre))
+            return BadRequest("El nombre es obligatorio.");
+        if (await _db.Categorias.AnyAsync(c => c.Nombre == dto.Nombre))
+            return BadRequest("Ya existe una categoría con ese nombre.");
+
         var categoria = new Categoria { Nombre = dto.Nombre, Descripcion = dto.Descripcion };
         _db.Categorias.Add(categoria);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = categoria.Id }, categoria);
+        return CreatedAtAction(nameof(ObtenerPorId), new { id = categoria.Id },
+            new { categoria.Id, categoria.Nombre, categoria.Descripcion });
     }
 
     [HttpPut("{id}")]
@@ -50,6 +57,8 @@ public class CategoriasController : ControllerBase
     {
         var categoria = await _db.Categorias.FindAsync(id);
         if (categoria == null) return NotFound();
+        if (await _db.Categorias.AnyAsync(c => c.Nombre == dto.Nombre && c.Id != id))
+            return BadRequest("Ya existe una categoría con ese nombre.");
 
         categoria.Nombre = dto.Nombre;
         categoria.Descripcion = dto.Descripcion;

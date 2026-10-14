@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InventarioApi.Infrastructure.Data;
@@ -37,6 +37,7 @@ public class ProductosController : ControllerBase
             p.Precio,
             p.Stock,
             p.ImagenUrl,
+            p.CategoriaId,
             Categoria = p.Categoria!.Nombre
         });
 
@@ -48,7 +49,16 @@ public class ProductosController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var producto = await _db.Productos.Include(p => p.Categoria).FirstOrDefaultAsync(p => p.Id == id);
+        // Proyección plana: evita el ciclo Producto -> Categoria -> Productos al serializar
+        var producto = await _db.Productos
+            .Where(p => p.Id == id)
+            .Select(p => new
+            {
+                p.Id, p.Nombre, p.Descripcion, p.Precio, p.Stock, p.ImagenUrl, p.Activo,
+                p.CategoriaId,
+                Categoria = p.Categoria!.Nombre
+            })
+            .FirstOrDefaultAsync();
         return producto == null ? NotFound() : Ok(producto);
     }
 
@@ -68,7 +78,8 @@ public class ProductosController : ControllerBase
         };
         _db.Productos.Add(producto);
         await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(ObtenerPorId), new { id = producto.Id }, producto);
+        return CreatedAtAction(nameof(ObtenerPorId), new { id = producto.Id },
+            new { producto.Id, producto.Nombre, producto.Descripcion, producto.Precio, producto.Stock, producto.ImagenUrl, producto.CategoriaId });
     }
 
     [HttpPut("{id}")]
@@ -98,7 +109,7 @@ public class ProductosController : ControllerBase
     }
 
     [HttpPost("{id}/imagen")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SubirImagen(int id, IFormFile archivo)
     {
         var producto = await _db.Productos.FindAsync(id);

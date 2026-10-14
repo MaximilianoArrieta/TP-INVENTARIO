@@ -1,0 +1,111 @@
+erDiagram
+    ROL ||--o{ USUARIO : asigna
+    CATEGORIA ||--o{ PRODUCTO : clasifica
+    PRODUCTO ||--o{ DETALLE_COMPRA : incluye
+    PRODUCTO ||--o{ DETALLE_VENTA : incluye
+    PROVEEDOR ||--o{ COMPRA : provee
+    CLIENTE ||--o{ VENTA : realiza
+    USUARIO ||--o{ COMPRA : registra
+    USUARIO ||--o{ VENTA : registra
+    COMPRA ||--o{ DETALLE_COMPRA : contiene
+    VENTA ||--o{ DETALLE_VENTA : contiene
+    USUARIO |o--o{ AUDITORIA : genera
+    USUARIO |o--o{ LOG_ERROR : asociado
+
+    ROL {
+        int Id PK
+        string Nombre UK
+    }
+
+    USUARIO {
+        int Id PK
+        string NombreUsuario UK
+        string PasswordHash
+        string Email
+        bool Activo
+        int RolId FK
+    }
+
+    CATEGORIA {
+        int Id PK
+        string Nombre UK
+        string Descripcion
+    }
+
+    PRODUCTO {
+        int Id PK
+        string Nombre
+        string Descripcion
+        decimal Precio
+        int Stock
+        string ImagenUrl
+        bool Activo
+        int CategoriaId FK
+    }
+
+    PROVEEDOR {
+        int Id PK
+        string RazonSocial
+        string Contacto
+        string Telefono
+        string Email
+        string Direccion
+    }
+
+    CLIENTE {
+        int Id PK
+        string Nombre
+        string Apellido
+        string Email
+        string Telefono
+        string Direccion
+    }
+
+    COMPRA {
+        int Id PK
+        datetime Fecha
+        int ProveedorId FK
+        int UsuarioId FK
+    }
+
+    DETALLE_COMPRA {
+        int Id PK
+        int CompraId FK
+        int ProductoId FK
+        int Cantidad
+        decimal PrecioUnitario
+    }
+
+    VENTA {
+        int Id PK
+        datetime Fecha
+        int ClienteId FK
+        int UsuarioId FK
+    }
+
+    DETALLE_VENTA {
+        int Id PK
+        int VentaId FK
+        int ProductoId FK
+        int Cantidad
+        decimal PrecioUnitario
+    }
+
+    AUDITORIA {
+        int Id PK
+        datetime Fecha
+        int UsuarioId FK
+        string Accion
+        string Entidad
+        int EntidadId
+        string Detalle
+    }
+
+    LOG_ERROR {
+        int Id PK
+        datetime Fecha
+        string Mensaje
+        string Detalle
+        string Ruta
+        int UsuarioId FK
+    }
