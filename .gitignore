@@ -1,38 +1,24 @@
-# Carpetas de compilación de Visual Studio / .NET
+# --- Compilación de Visual Studio / .NET ---
 [Bb]in/
 [Oo]bj/
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
+publish/
 
-# Archivos de Visual Studio
+# --- Archivos personales de Visual Studio ---
 .vs/
 *.user
 *.suo
 
-# Carpetas de publicación
-**/bin/Release/**/publish/
-publish/
-PublishProfiles/*.pubxml.user
-
-# Archivos temporales de NuGet
-*.nupkg
-**/packages/*
-!**/packages/build/
-
-# Archivos subidos por usuarios (no hace falta subir imágenes de prueba)
-wwwroot/uploads/*
-!wwwroot/uploads/.gitkeep
-
-# Secretos locales (por si en algún momento usás Secret Manager)
-appsettings.Development.json
+# --- Configuración con contraseñas: queda solo en la PC y en el servidor ---
+InventarioApi/appsettings.Production.json
+InventarioApi/appsettings.Development.json
 *.pfx
 
-# Archivos de sistema operativo
-.DS_Store
-Thumbs.db
+# --- Imágenes subidas por los usuarios ---
+**/wwwroot/uploads/*
+!**/wwwroot/uploads/.gitkeep
 
-# Logs
+# --- Logs y archivos del sistema operativo ---
 logs/
 *.log
+.DS_Store
+Thumbs.db
