@@ -90,6 +90,14 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await DatosIniciales.CargarAsync(db, app.Configuration);
+
+        // Datos de demostración (solo si "DatosDemo:Cargar" es true y la base no tiene productos)
+        if (app.Configuration.GetValue<bool>("DatosDemo:Cargar"))
+        {
+            var diferencia = app.Configuration.GetValue("Reportes:DiferenciaHorariaHoras", -3);
+            if (await DatosDemo.CargarAsync(db, diferencia))
+                app.Logger.LogInformation("Datos de demostración cargados.");
+        }
     }
     catch (Exception ex)
     {

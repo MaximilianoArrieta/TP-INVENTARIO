@@ -29,12 +29,18 @@ public class AppDbContext : DbContext
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
     public DbSet<LogError> LogErrores => Set<LogError>();
 
+    // Permite cargar datos masivos (por ejemplo, los de demostración) sin auditar cada fila
+    public bool AuditoriaDesactivada { get; set; }
+
     // ------------------------------------------------------------------
     // Auditoría automática: cada alta, modificación o baja que pasa por
     // SaveChanges queda registrada en la tabla Auditorias, con el usuario.
     // ------------------------------------------------------------------
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        if (AuditoriaDesactivada)
+            return await base.SaveChangesAsync(cancellationToken);
+
         var cambios = ChangeTracker.Entries()
             .Where(e => e.Entity is not Auditoria && e.Entity is not LogError &&
                         (e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted))
