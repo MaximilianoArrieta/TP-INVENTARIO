@@ -1,0 +1,144 @@
+﻿@page "/carrito"
+@implements IDisposable
+@inject CarritoCompras Carro
+@inject ApiClient Api
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Carrito" Volver="true" MostrarCarrito="false" />
+
+@if (Carro.Items.Count == 0)
+{
+    <div class="vacio">
+        <Icono Nombre="carrito" Tamanio="48" />
+        <h2>Tu carrito está vacío</h2>
+        <p>Sumá productos desde el catálogo.</p>
+        <a class="boton boton-primario" href="">Ver productos</a>
+    </div>
+}
+else
+{
+    foreach (var aviso in avisos)
+    {
+        <div class="alerta alerta-aviso">@aviso</div>
+    }
+    if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    <div class="lista" style="margin-top:10px">
+        @foreach (var i in Carro.Items)
+        {
+            <article class="item-carrito" @key="i.ProductoId">
+                <a class="ic-imagen" href="producto/@i.ProductoId">
+                    <ImagenProducto Nombre="@i.Nombre" Ruta="@i.ImagenUrl" Semilla="i.ProductoId" />
+                </a>
+                <div class="ic-cuerpo">
+                    <a class="ic-nombre" href="producto/@i.ProductoId">@i.Nombre</a>
+                    <span class="tenue">@Formato.Moneda(i.Precio) c/u</span>
+                    @if (i.Stock <= Disponibilidad.StockBajo)
+                    {
+                        <span class="disp disp-poco">@(i.Stock == 1 ? "¡Último disponible!" : $"Quedan {i.Stock}")</span>
+                    }
+                    <div class="ic-acciones">
+                        <Selector Valor="i.Cantidad" Maximo="i.Stock" ValorChanged="v => Carro.CambiarCantidad(i.ProductoId, v)" />
+                        <button class="boton-link boton-link-peligro" @onclick="() => Carro.Quitar(i.ProductoId)">Eliminar</button>
+                    </div>
+                </div>
+                <span class="ic-subtotal">@Formato.Moneda(i.Subtotal)</span>
+            </article>
+        }
+    </div>
+
+    <div class="pie-fijo">
+        <div class="pie-total">
+            <span>Total <span class="tenue">(@Formato.Unidades(Carro.Unidades))</span></span>
+            <strong>@Formato.Moneda(Carro.Total)</strong>
+        </div>
+        @if (esPersonal)
+        {
+            <p class="nota">Las compras de la tienda son para clientes. Ingresá con una cuenta de cliente para pagar.</p>
+        }
+        else
+        {
+            <button class="boton boton-primario boton-bloque" disabled="@verificando" @onclick="Continuar">
+                @(verificando ? "Verificando stock…" : "Continuar compra")
+            </button>
+        }
+    </div>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private readonly List<string> avisos = new();
+    private string? error;
+    private bool verificando, esPersonal, logueado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Carro.Cambio += Refrescar;
+        if (EstadoAuth != null)
+        {
+            var usuario = (await EstadoAuth).User;
+            logueado = usuario.Identity?.IsAuthenticated == true;
+            esPersonal = usuario.IsInRole("Admin") || usuario.IsInRole("Cajero");
+        }
+        await Verificar();
+    }
+
+    // Trae precio y stock actuales de cada producto: pudieron cambiar desde que se agregó
+    private async Task<bool> Verificar()
+    {
+        error = null;
+        avisos.Clear();
+        var ids = Carro.Items.Select(i => i.ProductoId).ToList();
+        if (ids.Count == 0) return true;
+
+        verificando = true;
+        try
+        {
+            var actuales = await Task.WhenAll(ids.Select(async id =>
+            {
+                try
+                {
+                    return (id, producto: await Api.GetAsync<ProductoItem>($"api/productos/{id}"), ok: true);
+                }
+                catch (ApiException ex) when (ex.Estado == HttpStatusCode.NotFound)
+                {
+                    return (id, producto: (ProductoItem?)null, ok: true);
+                }
+            }));
+
+            foreach (var (id, producto, _) in actuales)
+            {
+                var aviso = Carro.Actualizar(id, producto);
+                if (aviso != null) avisos.Add(aviso);
+            }
+            return avisos.Count == 0;
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            return false;
+        }
+        finally
+        {
+            verificando = false;
+        }
+    }
+
+    private async Task Continuar()
+    {
+        if (!await Verificar() || Carro.Items.Count == 0) return;
+
+        if (!logueado)
+            Nav.NavigateTo("login?volver=checkout");
+        else
+            Nav.NavigateTo("checkout");
+    }
+
+    private void Refrescar() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Carro.Cambio -= Refrescar;
+}

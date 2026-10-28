@@ -1,0 +1,142 @@
+﻿@page "/usuarios"
+@attribute [Authorize(Roles = "Admin")]
+@inject ApiClient Api
+@inject AvisosApp Avisos
+
+<Encabezado Titulo="Usuarios y roles" Volver="true" />
+
+<div class="pagina">
+    @if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    <div class="alerta alerta-info">
+        Admin: todo. Cajero: caja y sus ventas. Cliente: compra desde la app.
+        El último administrador no puede perder su rol ni desactivarse.
+    </div>
+
+    @if (usuarios == null)
+    {
+        <Cargando />
+    }
+    else
+    {
+        foreach (var u in usuarios)
+        {
+            <article class="tarjeta-lista usuario-fila" @key="u.Id">
+                <div class="tl-fila">
+                    <div>
+                        <div class="tl-titulo">@u.NombreUsuario @(u.NombreUsuario == miUsuario ? "(vos)" : "")</div>
+                        <div class="tl-sub">@(u.Email ?? "sin email")</div>
+                    </div>
+                    <span class="etiqueta @(u.Activo ? "etiqueta-crear" : "etiqueta-eliminar")">@(u.Activo ? "Activo" : "Inactivo")</span>
+                </div>
+                <div class="usuario-controles">
+                    <select value="@u.RolId" disabled="@(ocupado == u.Id)" @onchange="e => CambiarRol(u, e)" aria-label="Rol">
+                        @foreach (var r in roles)
+                        {
+                            <option value="@r.Id">@r.Nombre</option>
+                        }
+                    </select>
+                    <label class="interruptor">
+                        <input type="checkbox" checked="@u.Activo" disabled="@(ocupado == u.Id || u.NombreUsuario == miUsuario)"
+                               @onchange="e => CambiarEstado(u, e)" />
+                        Activo
+                    </label>
+                </div>
+            </article>
+        }
+        if (pagina < totalPaginas)
+        {
+            <button class="boton boton-secundario boton-bloque" @onclick="() => Cargar(false)">Ver más</button>
+        }
+    }
+</div>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private List<UsuarioItem>? usuarios;
+    private List<RolItem> roles = new();
+    private int pagina, totalPaginas = 1;
+    private int? ocupado;
+    private string? error, miUsuario;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EstadoAuth != null) miUsuario = (await EstadoAuth).User.Identity?.Name;
+        try
+        {
+            roles = await Api.GetAsync<List<RolItem>>("api/usuarios/roles") ?? new();
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        await Cargar(true);
+    }
+
+    private async Task Cargar(bool desdeElPrincipio)
+    {
+        var siguiente = desdeElPrincipio ? 1 : pagina + 1;
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<UsuarioItem>>($"api/usuarios?pageNumber={siguiente}&pageSize=20");
+            var nuevos = r?.Items ?? new();
+            usuarios = desdeElPrincipio || usuarios == null ? nuevos : usuarios.Concat(nuevos).ToList();
+            pagina = siguiente;
+            totalPaginas = Math.Max(1, r?.TotalPages ?? 1);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            usuarios ??= new();
+        }
+    }
+
+    private async Task CambiarRol(UsuarioItem u, ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var rolId) || rolId == u.RolId) return;
+        error = null;
+        ocupado = u.Id;
+        try
+        {
+            await Api.PutAsync($"api/usuarios/{u.Id}/rol", new { rolId });
+            u.RolId = rolId;
+            u.Rol = roles.FirstOrDefault(r => r.Id == rolId)?.Nombre ?? u.Rol;
+            Avisos.Mostrar($"{u.NombreUsuario} ahora es {u.Rol}.");
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            await Cargar(true); // vuelve a mostrar el rol que quedó guardado
+        }
+        finally
+        {
+            ocupado = null;
+        }
+    }
+
+    private async Task CambiarEstado(UsuarioItem u, ChangeEventArgs e)
+    {
+        var activo = e.Value is bool b && b;
+        error = null;
+        ocupado = u.Id;
+        try
+        {
+            await Api.PutAsync($"api/usuarios/{u.Id}/estado", new { activo });
+            u.Activo = activo;
+            Avisos.Mostrar($"{u.NombreUsuario} quedó {(activo ? "activo" : "inactivo")}.");
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            await Cargar(true);
+        }
+        finally
+        {
+            ocupado = null;
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿@page "/mas"
+@attribute [Authorize(Roles = "Admin")]
+
+<Encabezado Titulo="Administración" />
+
+<div class="pagina">
+    <nav class="menu">
+        <a class="menu-item" href="ventas">
+            <Icono Nombre="tendencia" />
+            <span class="menu-texto">Ventas<small>De la caja y de la app</small></span>
+            <Icono Nombre="derecha" Tamanio="18" />
+        </a>
+        <a class="menu-item" href="auditoria">
+            <Icono Nombre="escudo" />
+            <span class="menu-texto">Auditoría y errores<small>Quién hizo qué y cuándo</small></span>
+            <Icono Nombre="derecha" Tamanio="18" />
+        </a>
+        <a class="menu-item" href="usuarios">
+            <Icono Nombre="usuarios" />
+            <span class="menu-texto">Usuarios y roles<small>Cambiar rol, activar o desactivar</small></span>
+            <Icono Nombre="derecha" Tamanio="18" />
+        </a>
+        <a class="menu-item" href="cuenta">
+            <Icono Nombre="usuario" />
+            <span class="menu-texto">Mi cuenta<small>Servidor y cierre de sesión</small></span>
+            <Icono Nombre="derecha" Tamanio="18" />
+        </a>
+    </nav>
+</div>

@@ -1,0 +1,207 @@
+﻿@page "/auditoria"
+@attribute [Authorize(Roles = "Admin")]
+@inject ApiClient Api
+
+<Encabezado Titulo="Auditoría y errores" Volver="true" />
+
+<div class="segmentos" role="tablist">
+    <button class="segmento @(verErrores ? "" : "segmento-activo")" @onclick="() => Cambiar(false)">Movimientos</button>
+    <button class="segmento @(verErrores ? "segmento-activo" : "")" @onclick="() => Cambiar(true)">Errores</button>
+</div>
+
+@if (error != null)
+{
+    <div class="alerta alerta-error">@error</div>
+}
+@if (aviso != null)
+{
+    <div class="alerta alerta-aviso">@aviso</div>
+}
+
+@if (!verErrores)
+{
+    <div class="filtros">
+        <select @bind="accion" @bind:after="Filtrar" aria-label="Acción">
+            <option value="">Todas las acciones</option>
+            @foreach (var a in Acciones)
+            {
+                <option value="@a">@a</option>
+            }
+        </select>
+        <select @bind="entidad" @bind:after="Filtrar" aria-label="Entidad">
+            <option value="">Todas las entidades</option>
+            @foreach (var e in Entidades)
+            {
+                <option value="@e">@e</option>
+            }
+        </select>
+    </div>
+
+    <div class="pagina">
+        @if (movimientos == null)
+        {
+            <Cargando />
+        }
+        else if (movimientos.Count == 0)
+        {
+            <p class="vacio">No hay movimientos con esos filtros.</p>
+        }
+        else
+        {
+            foreach (var m in movimientos)
+            {
+                <article class="tarjeta-lista" @key="m.Id">
+                    <div class="tl-fila">
+                        <span class="etiqueta etiqueta-@m.Accion.ToLowerInvariant()">@m.Accion</span>
+                        <span class="tenue" style="font-size:12.5px">@Formato.Fecha(m.Fecha)</span>
+                    </div>
+                    <div class="tl-titulo" style="margin-top:6px">
+                        @m.Entidad @(m.EntidadId.HasValue ? $"#{m.EntidadId}" : "")
+                    </div>
+                    <div class="tl-sub">Por @(m.Usuario ?? "—")</div>
+                    @if (!string.IsNullOrWhiteSpace(m.Detalle))
+                    {
+                        <div class="tl-sub" style="color:#333;word-break:break-word">@m.Detalle</div>
+                    }
+                </article>
+            }
+            if (paginaMov < totalMov)
+            {
+                <button class="boton boton-secundario boton-bloque" @onclick="() => CargarMovimientos(false)">Ver más</button>
+            }
+        }
+    </div>
+}
+else
+{
+    <div class="pagina">
+        <div class="panel">
+            <button class="boton boton-peligro boton-bloque" disabled="@generando" @onclick="GenerarErrorDePrueba">
+                <Icono Nombre="alerta" Tamanio="18" /> Generar error de prueba
+            </button>
+            <p class="nota" style="margin-top:8px">Provoca un error a propósito en la API para comprobar que queda registrado.</p>
+        </div>
+
+        @if (errores == null)
+        {
+            <Cargando />
+        }
+        else if (errores.Count == 0)
+        {
+            <p class="vacio">No hay errores registrados.</p>
+        }
+        else
+        {
+            foreach (var e in errores)
+            {
+                <details class="tarjeta-lista" @key="e.Id">
+                    <summary>
+                        <div class="tl-fila">
+                            <span class="tl-titulo">Error N.º @e.Id</span>
+                            <span class="tenue" style="font-size:12.5px">@Formato.Fecha(e.Fecha)</span>
+                        </div>
+                        <div class="tl-sub" style="color:#333">@e.Mensaje</div>
+                        <div class="tl-sub">@e.Ruta · @(e.Usuario ?? "sin usuario")</div>
+                    </summary>
+                    <pre class="detalle-tecnico">@e.Detalle</pre>
+                </details>
+            }
+            if (paginaErr < totalErr)
+            {
+                <button class="boton boton-secundario boton-bloque" @onclick="() => CargarErrores(false)">Ver más</button>
+            }
+        }
+    </div>
+}
+
+@code {
+    private static readonly string[] Acciones =
+        { "Crear", "Modificar", "Eliminar", "Login", "LoginFallido", "PagoRechazado", "GenerarReporte", "EnviarReporte" };
+    private static readonly string[] Entidades =
+        { "Producto", "Venta", "DetalleVenta", "Pago", "Compra", "DetalleCompra", "Cliente", "Proveedor", "Usuario", "Categoria" };
+
+    private bool verErrores, generando;
+    private string? error, aviso;
+
+    private List<AuditoriaItem>? movimientos;
+    private int paginaMov, totalMov = 1;
+    private string accion = "", entidad = "";
+
+    private List<ErrorItem>? errores;
+    private int paginaErr, totalErr = 1;
+
+    protected override async Task OnInitializedAsync() => await CargarMovimientos(true);
+
+    private async Task Cambiar(bool mostrarErrores)
+    {
+        verErrores = mostrarErrores;
+        error = null;
+        aviso = null;
+        if (mostrarErrores) await CargarErrores(true);
+        else await CargarMovimientos(true);
+    }
+
+    private async Task Filtrar() => await CargarMovimientos(true);
+
+    private async Task CargarMovimientos(bool desdeElPrincipio)
+    {
+        error = null;
+        var siguiente = desdeElPrincipio ? 1 : paginaMov + 1;
+        if (desdeElPrincipio) movimientos = null;
+        try
+        {
+            var url = $"api/auditoria?pageNumber={siguiente}&pageSize=20";
+            if (accion != "") url += $"&accion={accion}";
+            if (entidad != "") url += $"&entidad={entidad}";
+            var r = await Api.GetAsync<PagedResult<AuditoriaItem>>(url);
+            var nuevos = r?.Items ?? new();
+            movimientos = movimientos == null ? nuevos : movimientos.Concat(nuevos).ToList();
+            paginaMov = siguiente;
+            totalMov = Math.Max(1, r?.TotalPages ?? 1);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            movimientos ??= new();
+        }
+    }
+
+    private async Task CargarErrores(bool desdeElPrincipio)
+    {
+        var siguiente = desdeElPrincipio ? 1 : paginaErr + 1;
+        if (desdeElPrincipio) errores = null;
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<ErrorItem>>($"api/auditoria/errores?pageNumber={siguiente}&pageSize=15");
+            var nuevos = r?.Items ?? new();
+            errores = errores == null ? nuevos : errores.Concat(nuevos).ToList();
+            paginaErr = siguiente;
+            totalErr = Math.Max(1, r?.TotalPages ?? 1);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            errores ??= new();
+        }
+    }
+
+    private async Task GenerarErrorDePrueba()
+    {
+        generando = true;
+        aviso = null;
+        try
+        {
+            await Api.GetAsync<object>("api/auditoria/errores/prueba");
+        }
+        catch (ApiException ex)
+        {
+            // Lo esperado: la API responde 500 con el número del error registrado
+            aviso = $"Error de prueba generado. La API respondió: {ex.Message}";
+        }
+        finally
+        {
+            generando = false;
+        }
+        await CargarErrores(true);
+    }
+}

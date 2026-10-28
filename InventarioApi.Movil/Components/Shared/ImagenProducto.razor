@@ -1,0 +1,40 @@
+﻿@inject ApiClient Api
+
+@if (url != null && !fallo)
+{
+    <img class="img-producto" src="@url" alt="@Nombre" loading="lazy" @onerror="() => fallo = true" />
+}
+else
+{
+    @* Sin foto: un cuadro de color con las iniciales del producto *@
+    <div class="img-sustituta" style="background:@Color"><span>@Iniciales</span></div>
+}
+
+@code {
+    private static readonly string[] Colores = { "#fde68a", "#bfdbfe", "#c7f0d1", "#fbcfe8", "#ddd6fe", "#fed7aa", "#bae6fd", "#e9d5ff" };
+
+    [Parameter] public string Nombre { get; set; } = "";
+    [Parameter] public string? Ruta { get; set; }
+    [Parameter] public int Semilla { get; set; }
+
+    private string? url;
+    private bool fallo;
+
+    protected override void OnParametersSet()
+    {
+        var nueva = Api.UrlArchivo(Ruta);
+        if (nueva != url)
+        {
+            url = nueva;
+            fallo = false;
+        }
+    }
+
+    private string Color => Colores[Math.Abs(Semilla) % Colores.Length];
+
+    private string Iniciales =>
+        string.Concat(Nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(p => char.IsLetterOrDigit(p[0]))
+            .Take(2)
+            .Select(p => char.ToUpperInvariant(p[0])));
+}

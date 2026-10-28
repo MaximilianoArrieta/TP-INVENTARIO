@@ -1,0 +1,101 @@
+﻿@page "/compra/{Id:int}"
+@attribute [Authorize(Roles = "Cliente")]
+@inject ApiClient Api
+
+@if (Nueva)
+{
+    <div class="exito">
+        <Icono Nombre="tilde" Tamanio="54" />
+        <h1>¡Listo! Tu compra fue aprobada</h1>
+        @if (compra?.CodigoAutorizacion != null)
+        {
+            <span>Código de autorización @compra.CodigoAutorizacion</span>
+        }
+    </div>
+}
+else
+{
+    <Encabezado Titulo="@($"Compra N.º {Id}")" Volver="true" />
+}
+
+@if (compra == null)
+{
+    if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+    else
+    {
+        <Cargando />
+    }
+}
+else
+{
+    <div class="pagina">
+        <section class="panel">
+            <div class="tl-fila">
+                <span class="tl-titulo">Compra N.º @compra.Id</span>
+                <span class="tenue">@Formato.Fecha(compra.Fecha)</span>
+            </div>
+            <div class="tl-sub">
+                Pagaste con @(compra.MedioPago ?? "—")
+                @if (compra.UltimosDigitos != null)
+                {
+                    <span> terminada en @compra.UltimosDigitos</span>
+                }
+                @if (compra.Cuotas > 1)
+                {
+                    <span> · @compra.Cuotas cuotas de @Formato.Moneda(Math.Round(compra.Total / compra.Cuotas, 2))</span>
+                }
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2 class="panel-titulo">Productos</h2>
+            @foreach (var d in compra.Detalles)
+            {
+                <div class="item-carrito" style="padding:8px 0">
+                    <a class="ic-imagen" href="producto/@d.ProductoId">
+                        <ImagenProducto Nombre="@d.Producto" Ruta="@d.ImagenUrl" Semilla="d.ProductoId" />
+                    </a>
+                    <div class="ic-cuerpo">
+                        <span class="ic-nombre">@d.Producto</span>
+                        <span class="tenue">@d.Cantidad × @Formato.Moneda(d.PrecioUnitario)</span>
+                    </div>
+                    <span class="ic-subtotal">@Formato.Moneda(d.Subtotal)</span>
+                </div>
+            }
+            <div class="resumen-total">
+                <span>Total</span>
+                <strong>@Formato.Moneda(compra.Total)</strong>
+            </div>
+        </section>
+
+        <div class="acciones">
+            <a class="boton boton-primario" href="">Seguir comprando</a>
+            <a class="boton boton-secundario" href="mis-compras">Mis compras</a>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    // Viene en true cuando se llega recién pagada la compra
+    [SupplyParameterFromQuery] public bool Nueva { get; set; }
+
+    private CompraClienteVista? compra;
+    private string? error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            compra = await Api.GetAsync<CompraClienteVista>($"api/tienda/mis-compras/{Id}");
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Estado == HttpStatusCode.NotFound ? "No encontramos esa compra." : ex.Message;
+        }
+    }
+}

@@ -2,5 +2,8 @@
   <Project Path="../InventarioApi.Domain/InventarioApi.Domain.csproj" />
   <Project Path="../InventarioApi.Infrastructure/InventarioApi.Infrastructure.csproj" />
   <Project Path="InventarioApi.csproj" />
+  <Project Path="../InventarioApi.Movil/InventarioApi.Movil.csproj" Id="9b48d2da-c658-4e39-8f67-3e5631794724">
+    <Deploy Solution="Debug|*" />
+  </Project>
   <Project Path="../InventarioApi.Web/InventarioApi.Web.csproj" />
 </Solution>

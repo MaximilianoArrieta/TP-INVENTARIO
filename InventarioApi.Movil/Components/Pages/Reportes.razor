@@ -1,0 +1,227 @@
+﻿@page "/reportes"
+@attribute [Authorize(Roles = "Admin")]
+@inject ApiClient Api
+@inject ArchivosPdf Archivos
+
+<Encabezado Titulo="Reportes PDF" />
+
+<div class="pagina">
+    @if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+    @if (exito != null)
+    {
+        <div class="alerta alerta-ok">@exito</div>
+    }
+
+    <section class="panel">
+        <label class="campo">
+            <span>Enviar los reportes por correo a</span>
+            <input type="email" autocapitalize="none" placeholder="correo@ejemplo.com" @bind="email" @bind:event="oninput" />
+        </label>
+    </section>
+
+    @foreach (var r in opciones)
+    {
+        <section class="panel">
+            <h2 class="panel-titulo">@r.Titulo</h2>
+            <p class="nota" style="margin-bottom:12px">@r.Descripcion</p>
+
+            @if (r.ConPeriodo)
+            {
+                <div class="fila-2">
+                    <label class="campo"><span>Desde</span><input type="date" @bind="r.Desde" /></label>
+                    <label class="campo"><span>Hasta</span><input type="date" @bind="r.Hasta" /></label>
+                </div>
+            }
+
+            <div class="acciones">
+                <button class="boton boton-primario boton-chico" disabled="@(ocupado != null)" @onclick="() => Ver(r)">
+                    <Icono Nombre="archivo" Tamanio="18" /> @(ocupado == r.Tipo + ":ver" ? "Generando…" : "Ver")
+                </button>
+                <button class="boton boton-secundario boton-chico" disabled="@(ocupado != null)" @onclick="() => Compartir(r)">
+                    <Icono Nombre="compartir" Tamanio="18" /> @(ocupado == r.Tipo + ":compartir" ? "Generando…" : "Compartir")
+                </button>
+                <button class="boton boton-secundario boton-chico" disabled="@(ocupado != null)" @onclick="() => Enviar(r)">
+                    <Icono Nombre="correo" Tamanio="18" /> @(ocupado == r.Tipo + ":enviar" ? "Enviando…" : "Enviar")
+                </button>
+            </div>
+        </section>
+    }
+</div>
+
+@if (paginas != null)
+{
+    <div class="visor">
+        <div class="visor-barra">
+            <h2>@tituloVisor</h2>
+            <button class="enc-boton" @onclick="CompartirAbierto" aria-label="Compartir"><Icono Nombre="compartir" /></button>
+            <button class="enc-boton" @onclick="AbrirConOtraApp" aria-label="Abrir con otra app"><Icono Nombre="abrir" /></button>
+            <button class="enc-boton" @onclick="CerrarVisor" aria-label="Cerrar"><Icono Nombre="cerrar" /></button>
+        </div>
+        <div class="visor-paginas">
+            @foreach (var pagina in paginas)
+            {
+                <img src="@pagina" alt="Página del reporte" />
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private class OpcionReporte
+    {
+        public string Tipo { get; init; } = "";
+        public string Titulo { get; init; } = "";
+        public string Descripcion { get; init; } = "";
+        public bool ConPeriodo { get; init; }
+        public DateTime? Desde { get; set; }
+        public DateTime? Hasta { get; set; }
+    }
+
+    private List<OpcionReporte> opciones = new();
+    private string email = "";
+    private string? ocupado, error, exito;
+
+    // Visor
+    private List<string>? paginas;
+    private string tituloVisor = "", rutaVisor = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hoy = DateTime.Today;
+        var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+        opciones = new()
+        {
+            new() { Tipo = "stock", Titulo = "Stock actual", Descripcion = "Existencias de cada producto valorizadas, con los faltantes resaltados." },
+            new() { Tipo = "ventas", Titulo = "Ventas (salidas)", Descripcion = "Ventas del período por canal (caja y app), productos más vendidos y detalle.", ConPeriodo = true, Desde = inicioMes, Hasta = hoy },
+            new() { Tipo = "ingresos", Titulo = "Ingresos de mercadería (entradas)", Descripcion = "Compras a proveedores del período y costo por producto.", ConPeriodo = true, Desde = inicioMes, Hasta = hoy }
+        };
+
+        try
+        {
+            var yo = await Api.GetAsync<UsuarioActual>("api/auth/yo");
+            email = yo?.Email ?? "";
+        }
+        catch (ApiException) { }
+    }
+
+    private static string Url(OpcionReporte r) =>
+        r.ConPeriodo ? $"api/reportes/{r.Tipo}?desde={r.Desde:yyyy-MM-dd}&hasta={r.Hasta:yyyy-MM-dd}" : $"api/reportes/{r.Tipo}";
+
+    private static string NombreArchivo(OpcionReporte r) =>
+        r.ConPeriodo ? $"{r.Tipo}_{r.Desde:yyyyMMdd}_{r.Hasta:yyyyMMdd}.pdf" : $"{r.Tipo}_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+
+    private bool PeriodoValido(OpcionReporte r)
+    {
+        if (!r.ConPeriodo) return true;
+        if (r.Desde == null || r.Hasta == null) { error = "Elegí las dos fechas del período."; return false; }
+        if (r.Desde > r.Hasta) { error = "La fecha 'desde' no puede ser posterior a 'hasta'."; return false; }
+        return true;
+    }
+
+    // Pide el PDF a la API y lo guarda en el celular
+    private async Task<string?> Generar(OpcionReporte r, string accion)
+    {
+        error = null;
+        exito = null;
+        if (!PeriodoValido(r)) return null;
+
+        ocupado = r.Tipo + ":" + accion;
+        try
+        {
+            var bytes = await Api.GetArchivoAsync(Url(r));
+            return await Archivos.GuardarAsync(bytes, NombreArchivo(r));
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            return null;
+        }
+        finally
+        {
+            ocupado = null;
+        }
+    }
+
+    private async Task Ver(OpcionReporte r)
+    {
+        var ruta = await Generar(r, "ver");
+        if (ruta == null) return;
+
+        ocupado = r.Tipo + ":ver";
+        try
+        {
+            paginas = await Archivos.PaginasComoImagenesAsync(ruta);
+            tituloVisor = r.Titulo;
+            rutaVisor = ruta;
+        }
+        catch (Exception)
+        {
+            // Si el lector de Android falla, se ofrece abrirlo con otra app
+            error = "No se pudo mostrar el PDF en la app. Probá con Compartir o abrilo con otra app.";
+            rutaVisor = ruta;
+            await AbrirConOtraApp();
+        }
+        finally
+        {
+            ocupado = null;
+        }
+    }
+
+    private async Task Compartir(OpcionReporte r)
+    {
+        var ruta = await Generar(r, "compartir");
+        if (ruta != null) await Archivos.CompartirAsync(ruta, $"Reporte de {r.Titulo.ToLowerInvariant()}");
+    }
+
+    private async Task Enviar(OpcionReporte r)
+    {
+        error = null;
+        exito = null;
+        if (!PeriodoValido(r)) return;
+        if (string.IsNullOrWhiteSpace(email)) { error = "Completá el correo al que querés enviar el reporte."; return; }
+
+        ocupado = r.Tipo + ":enviar";
+        try
+        {
+            var respuesta = await Api.PostAsync<MensajeRespuesta>($"api/reportes/{r.Tipo}/enviar", new
+            {
+                email = email.Trim(),
+                desde = r.ConPeriodo ? r.Desde : null,
+                hasta = r.ConPeriodo ? r.Hasta : null
+            });
+            exito = respuesta?.Mensaje ?? "Reporte enviado.";
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            ocupado = null;
+        }
+    }
+
+    private async Task CompartirAbierto()
+    {
+        if (rutaVisor != "") await Archivos.CompartirAsync(rutaVisor, tituloVisor);
+    }
+
+    private async Task AbrirConOtraApp()
+    {
+        if (rutaVisor == "") return;
+        try
+        {
+            if (!await Archivos.AbrirConOtraAppAsync(rutaVisor, tituloVisor))
+                error = "No hay ninguna app para abrir PDF en este celular. Usá Compartir.";
+        }
+        catch (Exception)
+        {
+            error = "No hay ninguna app para abrir PDF en este celular. Usá Compartir.";
+        }
+    }
+
+    private void CerrarVisor() => paginas = null;
+}

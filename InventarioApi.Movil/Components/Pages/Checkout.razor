@@ -1,0 +1,312 @@
+﻿@page "/checkout"
+@attribute [Authorize(Roles = "Cliente")]
+@inject CarritoCompras Carro
+@inject ApiClient Api
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Pagar" Volver="true" MostrarCarrito="false" />
+
+@if (Carro.Items.Count == 0 && !pagando)
+{
+    <div class="vacio">
+        <Icono Nombre="carrito" Tamanio="48" />
+        <h2>No hay nada para pagar</h2>
+        <a class="boton boton-primario" href="">Ver productos</a>
+    </div>
+}
+else if (medios == null)
+{
+    if (error != null)
+    {
+        <div class="alerta alerta-error">@error <button class="boton-link" @onclick="CargarMedios">Reintentar</button></div>
+    }
+    else
+    {
+        <Cargando Texto="Preparando el pago…" />
+    }
+}
+else
+{
+    <div class="pagina">
+        <section class="panel">
+            <h2 class="panel-titulo">Tu compra</h2>
+            @foreach (var i in Carro.Items)
+            {
+                <div class="resumen-linea">
+                    <span>@i.Cantidad × @i.Nombre</span>
+                    <span>@Formato.Moneda(i.Subtotal)</span>
+                </div>
+            }
+            <div class="resumen-total">
+                <span>Total</span>
+                <strong>@Formato.Moneda(Carro.Total)</strong>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2 class="panel-titulo">¿Cómo querés pagar?</h2>
+            <div class="medios">
+                @foreach (var m in medios)
+                {
+                    <label class="medio @(medio?.Id == m.Id ? "medio-activo" : "")">
+                        <input type="radio" name="medio" checked="@(medio?.Id == m.Id)" @onchange="() => ElegirMedio(m)" />
+                        <Icono Nombre="@IconoDe(m)" />
+                        <span class="menu-texto">
+                            @m.Nombre
+                            <small>@DetalleDe(m)</small>
+                        </span>
+                    </label>
+                }
+            </div>
+        </section>
+
+        @if (medio?.RequiereTarjeta == true)
+        {
+            <section class="panel">
+                <h2 class="panel-titulo">Datos de la tarjeta</h2>
+
+                <div class="tarjeta-vista" aria-hidden="true">
+                    <div class="tv-chip"></div>
+                    <div class="tv-numero">@NumeroParaMostrar</div>
+                    <div class="tv-pie">
+                        <span><small>Titular</small>@(string.IsNullOrWhiteSpace(titular) ? "NOMBRE APELLIDO" : titular)</span>
+                        <span><small>Vence</small>@(string.IsNullOrEmpty(vencimiento) ? "MM/AA" : vencimiento)</span>
+                    </div>
+                </div>
+
+                <label class="campo">
+                    <span>Número de tarjeta</span>
+                    <input inputmode="numeric" autocomplete="cc-number" maxlength="23" placeholder="0000 0000 0000 0000"
+                           value="@numero" @oninput="CambiarNumero" />
+                </label>
+                <label class="campo">
+                    <span>Nombre del titular</span>
+                    <input autocomplete="cc-name" autocapitalize="characters" placeholder="Como figura en la tarjeta"
+                           @bind="titular" @bind:event="oninput" />
+                </label>
+                <div class="fila-2">
+                    <label class="campo">
+                        <span>Vencimiento</span>
+                        <input inputmode="numeric" maxlength="5" placeholder="MM/AA" value="@vencimiento" @oninput="CambiarVencimiento" />
+                    </label>
+                    <label class="campo">
+                        <span>Código de seguridad</span>
+                        <input inputmode="numeric" type="password" maxlength="4" placeholder="CVV" @bind="codigo" @bind:event="oninput" />
+                    </label>
+                </div>
+
+                @if (medio.PermiteCuotas)
+                {
+                    <label class="campo">
+                        <span>Cuotas</span>
+                        <select @bind="cuotas">
+                            @foreach (var c in OpcionesCuotas)
+                            {
+                                <option value="@c">@TextoCuotas(c)</option>
+                            }
+                        </select>
+                    </label>
+                }
+
+                <details class="prueba">
+                    <summary>Tarjetas de prueba (pago simulado)</summary>
+                    <ul>
+                        <li><button class="boton-link" @onclick="() => UsarTarjeta(TarjetaAprobada)">4509 9535 6623 3704</button>: se aprueba.</li>
+                        <li><button class="boton-link" @onclick="() => UsarTarjeta(TarjetaRechazada)">4000 0000 0000 0002</button>: se rechaza por fondos insuficientes.</li>
+                        <li>Compras de más de $ 500.000 con tarjeta: se rechazan por límite.</li>
+                    </ul>
+                    <span class="tenue">Cualquier vencimiento futuro y código de 3 dígitos.</span>
+                </details>
+            </section>
+        }
+        else if (medio != null)
+        {
+            <section class="panel">
+                @if (medio.Nombre.Contains("Billetera", StringComparison.OrdinalIgnoreCase))
+                {
+                    <p>Al confirmar se simula el pago con tu billetera virtual y la compra se acredita al instante.</p>
+                }
+                else
+                {
+                    <p>Al confirmar se simula una transferencia a la cuenta del negocio:</p>
+                    <p class="tenue" style="margin-top:8px">Alias <strong>CAJA.Y.STOCK.TP</strong> · CBU 0000003100000000000001</p>
+                }
+            </section>
+        }
+
+        @if (rechazo != null)
+        {
+            <div class="alerta alerta-error">
+                <strong>Pago rechazado</strong>
+                @rechazo Probá con otra tarjeta u otro medio de pago.
+            </div>
+        }
+        @if (error != null)
+        {
+            <div class="alerta alerta-error">
+                @error
+                @if (errorDeStock)
+                {
+                    <a class="boton-link" href="carrito">Revisar carrito</a>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="pie-fijo">
+        <button class="boton boton-primario boton-bloque" disabled="@(pagando || medio == null)" @onclick="Pagar">
+            @(medio == null ? "Elegí un medio de pago" : $"Pagar {Formato.Moneda(Carro.Total)}")
+        </button>
+    </div>
+}
+
+@if (pagando)
+{
+    <div class="overlay">
+        <div class="overlay-caja">
+            <div class="spinner"></div>
+            <strong>Procesando el pago…</strong>
+            <span class="tenue">No cierres la app</span>
+        </div>
+    </div>
+}
+
+@code {
+    private const string TarjetaAprobada = "4509953566233704";
+    private const string TarjetaRechazada = "4000000000000002";
+    private static readonly int[] OpcionesCuotas = { 1, 3, 6, 12 };
+
+    private List<MedioPagoItem>? medios;
+    private MedioPagoItem? medio;
+    private string numero = "", titular = "", vencimiento = "", codigo = "";
+    private int cuotas = 1;
+    private bool pagando, errorDeStock;
+    private string? error, rechazo;
+
+    protected override async Task OnInitializedAsync() => await CargarMedios();
+
+    private async Task CargarMedios()
+    {
+        error = null;
+        try
+        {
+            medios = await Api.GetAsync<List<MedioPagoItem>>("api/tienda/medios-pago") ?? new();
+            medio = medios.FirstOrDefault();
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+    }
+
+    private void ElegirMedio(MedioPagoItem m)
+    {
+        medio = m;
+        rechazo = null;
+        error = null;
+        if (!m.PermiteCuotas) cuotas = 1;
+    }
+
+    private static string IconoDe(MedioPagoItem m) =>
+        m.RequiereTarjeta ? "tarjeta"
+        : m.Nombre.Contains("Billetera", StringComparison.OrdinalIgnoreCase) ? "celular"
+        : "transferencia";
+
+    private static string DetalleDe(MedioPagoItem m) =>
+        m.PermiteCuotas ? "Hasta 12 cuotas sin interés"
+        : m.RequiereTarjeta ? "En un pago"
+        : "Acreditación inmediata";
+
+    private string TextoCuotas(int c) =>
+        c == 1 ? $"1 pago de {Formato.Moneda(Carro.Total)}"
+               : $"{c} cuotas de {Formato.Moneda(Math.Round(Carro.Total / c, 2))} sin interés";
+
+    private string NumeroParaMostrar
+    {
+        get
+        {
+            var digitos = SoloDigitos(numero).PadRight(16, '•');
+            return string.Join(" ", Enumerable.Range(0, digitos.Length / 4).Select(i => digitos.Substring(i * 4, 4)));
+        }
+    }
+
+    private static string SoloDigitos(string? texto) => new((texto ?? "").Where(char.IsDigit).ToArray());
+
+    // Agrupa el número de a 4 mientras se escribe
+    private void CambiarNumero(ChangeEventArgs e)
+    {
+        var digitos = SoloDigitos(e.Value?.ToString());
+        if (digitos.Length > 19) digitos = digitos[..19];
+        numero = string.Join(" ", Enumerable.Range(0, (digitos.Length + 3) / 4)
+            .Select(i => digitos.Substring(i * 4, Math.Min(4, digitos.Length - i * 4))));
+    }
+
+    // Agrega la barra de MM/AA sola
+    private void CambiarVencimiento(ChangeEventArgs e)
+    {
+        var digitos = SoloDigitos(e.Value?.ToString());
+        if (digitos.Length > 4) digitos = digitos[..4];
+        vencimiento = digitos.Length > 2 ? $"{digitos[..2]}/{digitos[2..]}" : digitos;
+    }
+
+    private void UsarTarjeta(string tarjeta)
+    {
+        CambiarNumero(new ChangeEventArgs { Value = tarjeta });
+        if (string.IsNullOrWhiteSpace(titular)) titular = "CLIENTE DE PRUEBA";
+        if (string.IsNullOrEmpty(vencimiento)) vencimiento = $"12/{(DateTime.Today.Year + 2) % 100:00}";
+        if (string.IsNullOrEmpty(codigo)) codigo = "123";
+    }
+
+    private async Task Pagar()
+    {
+        if (pagando || medio == null) return;
+        error = null;
+        rechazo = null;
+        errorDeStock = false;
+
+        if (medio.RequiereTarjeta &&
+            (SoloDigitos(numero).Length < 13 || string.IsNullOrWhiteSpace(titular) || vencimiento.Length != 5 || SoloDigitos(codigo).Length < 3))
+        {
+            error = "Completá todos los datos de la tarjeta.";
+            return;
+        }
+
+        pagando = true;
+        try
+        {
+            var pedido = new
+            {
+                items = Carro.Items.Select(i => new { productoId = i.ProductoId, cantidad = i.Cantidad }).ToList(),
+                pago = new
+                {
+                    medioPagoId = medio.Id,
+                    numeroTarjeta = medio.RequiereTarjeta ? SoloDigitos(numero) : null,
+                    titular = medio.RequiereTarjeta ? titular.Trim() : null,
+                    vencimiento = medio.RequiereTarjeta ? vencimiento : null,
+                    codigo = medio.RequiereTarjeta ? codigo : null,
+                    cuotas = medio.PermiteCuotas ? cuotas : 1
+                }
+            };
+
+            var compra = await Api.PostAsync<CompraClienteVista>("api/tienda/checkout", pedido);
+
+            Carro.Vaciar();
+            Catalogo.Invalidar();
+            Nav.NavigateTo($"compra/{compra!.Id}?nueva=true", replace: true);
+        }
+        catch (ApiException ex) when (ex.Estado == HttpStatusCode.PaymentRequired)
+        {
+            rechazo = ex.Message; // la venta no se registró y el stock no cambió
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            errorDeStock = ex.Message.Contains("stock", StringComparison.OrdinalIgnoreCase)
+                        || ex.Message.Contains("disponible", StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            pagando = false;
+        }
+    }
+}

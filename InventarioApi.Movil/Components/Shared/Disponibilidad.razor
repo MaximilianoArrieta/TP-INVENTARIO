@@ -1,0 +1,28 @@
+﻿@* Cómo se muestra el stock: al cliente con frases, al personal con el número *@
+@if (Stock <= 0)
+{
+    <span class="disp disp-agotado">Sin stock</span>
+}
+else if (VerNumero)
+{
+    <span class="disp @(Stock <= StockBajo ? "disp-poco" : "disp-ok")">Stock: @Stock @(Stock <= StockBajo ? "· bajo" : "")</span>
+}
+else if (Stock == 1)
+{
+    <span class="disp disp-poco">¡Último disponible!</span>
+}
+else if (Stock <= StockBajo)
+{
+    <span class="disp disp-poco">¡Últimas @Stock unidades!</span>
+}
+else
+{
+    <span class="disp disp-ok">Disponible</span>
+}
+
+@code {
+    public const int StockBajo = 5;
+
+    [Parameter] public int Stock { get; set; }
+    [Parameter] public bool VerNumero { get; set; }
+}

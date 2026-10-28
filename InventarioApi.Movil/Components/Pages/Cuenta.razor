@@ -1,0 +1,74 @@
+﻿@page "/cuenta"
+@attribute [Authorize]
+@inject ApiClient Api
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Mi cuenta" />
+
+<div class="pagina">
+    <section class="panel">
+        <div class="perfil">
+            <div class="avatar">@Inicial</div>
+            <div>
+                <h2>@nombre</h2>
+                <span class="etiqueta">@rol</span>
+                @if (!string.IsNullOrEmpty(yo?.Email))
+                {
+                    <div class="tl-sub">@yo.Email</div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <nav class="menu">
+        @if (rol == "Cliente")
+        {
+            <a class="menu-item" href="mis-compras">
+                <Icono Nombre="bolsa" />
+                <span class="menu-texto">Mis compras<small>Historial y comprobantes</small></span>
+                <Icono Nombre="derecha" Tamanio="18" />
+            </a>
+        }
+        <a class="menu-item" href="servidor">
+            <Icono Nombre="servidor" />
+            <span class="menu-texto">Servidor<small>@Api.Servidor</small></span>
+            <Icono Nombre="derecha" Tamanio="18" />
+        </a>
+        <button class="menu-item menu-peligro" @onclick="CerrarSesion">
+            <Icono Nombre="salir" />
+            <span class="menu-texto">Cerrar sesión</span>
+        </button>
+    </nav>
+
+    <p class="nota centrado">Caja y Stock · TP6 Programación Móvil · Arrieta y Gonzáles</p>
+</div>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private UsuarioActual? yo;
+    private string nombre = "", rol = "";
+
+    private string Inicial => string.IsNullOrEmpty(nombre) ? "?" : nombre[..1].ToUpperInvariant();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EstadoAuth != null)
+        {
+            var usuario = (await EstadoAuth).User;
+            nombre = usuario.Identity?.Name ?? "";
+            rol = usuario.IsInRole("Admin") ? "Admin" : usuario.IsInRole("Cajero") ? "Cajero" : "Cliente";
+        }
+
+        try { yo = await Api.GetAsync<UsuarioActual>("api/auth/yo"); }
+        catch (ApiException) { /* se muestra lo que trae el token */ }
+    }
+
+    private async Task CerrarSesion()
+    {
+        await Sesion.CerrarSesionAsync();
+        Catalogo.Invalidar();
+        Nav.NavigateTo("", replace: true);
+    }
+}

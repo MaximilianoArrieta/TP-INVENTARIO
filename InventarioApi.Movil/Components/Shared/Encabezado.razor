@@ -1,0 +1,57 @@
+﻿@implements IDisposable
+@inject IJSRuntime JS
+@inject CarritoCompras Carrito
+
+<header class="encabezado">
+    @if (Volver)
+    {
+        <button class="enc-boton" @onclick="IrAtras" aria-label="Volver"><Icono Nombre="atras" /></button>
+    }
+
+    @if (ChildContent != null)
+    {
+        <div class="enc-centro">@ChildContent</div>
+    }
+    else
+    {
+        <h1 class="enc-titulo">@Titulo</h1>
+    }
+
+    @if (MostrarCarrito && !esPersonal)
+    {
+        <a class="enc-boton" href="carrito" aria-label="Carrito">
+            <Icono Nombre="carrito" />
+            @if (Carrito.Unidades > 0)
+            {
+                <span class="insignia">@Carrito.Unidades</span>
+            }
+        </a>
+    }
+</header>
+
+@code {
+    [Parameter] public string Titulo { get; set; } = "";
+    [Parameter] public bool Volver { get; set; }
+    [Parameter] public bool MostrarCarrito { get; set; } = true;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    // Admin y Cajero no compran desde la tienda: no ven el carrito
+    private bool esPersonal;
+
+    protected override void OnInitialized() => Carrito.Cambio += Refrescar;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (EstadoAuth == null) return;
+        var usuario = (await EstadoAuth).User;
+        esPersonal = usuario.IsInRole("Admin") || usuario.IsInRole("Cajero");
+    }
+
+    private async Task IrAtras() => await JS.InvokeVoidAsync("history.back");
+
+    private void Refrescar() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Carrito.Cambio -= Refrescar;
+}

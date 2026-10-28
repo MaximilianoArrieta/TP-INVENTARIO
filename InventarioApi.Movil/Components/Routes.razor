@@ -1,0 +1,25 @@
+﻿<Router AppAssembly="typeof(MauiProgram).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        @* Las pantallas con [Authorize] solo se muestran si el rol corresponde *@
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                @if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    <RedirigirLogin />
+                }
+                else
+                {
+                    <div class="vacio">
+                        <Icono Nombre="escudo" Tamanio="44" />
+                        <h2>Sin permiso</h2>
+                        <p>Tu usuario no tiene acceso a esta sección.</p>
+                        <a class="boton boton-secundario" href="">Ir al inicio</a>
+                    </div>
+                }
+            </NotAuthorized>
+            <Authorizing>
+                <Cargando />
+            </Authorizing>
+        </AuthorizeRouteView>
+    </Found>
+</Router>

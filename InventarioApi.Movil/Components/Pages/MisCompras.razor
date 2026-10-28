@@ -1,0 +1,82 @@
+﻿@page "/mis-compras"
+@attribute [Authorize(Roles = "Cliente")]
+@inject ApiClient Api
+
+<Encabezado Titulo="Mis compras" />
+
+@if (compras == null)
+{
+    if (error != null)
+    {
+        <div class="alerta alerta-error">@error <button class="boton-link" @onclick="() => Cargar(true)">Reintentar</button></div>
+    }
+    else
+    {
+        <Cargando />
+    }
+}
+else if (compras.Count == 0)
+{
+    <div class="vacio">
+        <Icono Nombre="bolsa" Tamanio="48" />
+        <h2>Todavía no compraste nada</h2>
+        <p>Cuando compres algo lo vas a ver acá.</p>
+        <a class="boton boton-primario" href="">Ver productos</a>
+    </div>
+}
+else
+{
+    <div class="pagina">
+        @foreach (var c in compras)
+        {
+            <a class="tarjeta-lista" href="compra/@c.Id" @key="c.Id">
+                <div class="tl-fila">
+                    <span class="tl-titulo">Compra N.º @c.Id</span>
+                    <span class="tl-monto">@Formato.Moneda(c.Total)</span>
+                </div>
+                <div class="tl-sub">
+                    @Formato.Fecha(c.Fecha) · @Formato.Unidades(c.Detalles.Sum(d => d.Cantidad)) · @(c.MedioPago ?? "—")
+                </div>
+                <div class="miniaturas">
+                    @foreach (var d in c.Detalles.Take(5))
+                    {
+                        <div class="miniatura">
+                            <ImagenProducto Nombre="@d.Producto" Ruta="@d.ImagenUrl" Semilla="d.ProductoId" />
+                        </div>
+                    }
+                </div>
+            </a>
+        }
+
+        @if (pagina < totalPaginas)
+        {
+            <button class="boton boton-secundario boton-bloque" @onclick="() => Cargar(false)">Ver más</button>
+        }
+    </div>
+}
+
+@code {
+    private List<CompraClienteVista>? compras;
+    private int pagina, totalPaginas = 1;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => await Cargar(true);
+
+    private async Task Cargar(bool desdeElPrincipio)
+    {
+        error = null;
+        var siguiente = desdeElPrincipio ? 1 : pagina + 1;
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<CompraClienteVista>>($"api/tienda/mis-compras?pageNumber={siguiente}&pageSize=10");
+            var nuevas = r?.Items ?? new();
+            compras = desdeElPrincipio || compras == null ? nuevas : compras.Concat(nuevas).ToList();
+            pagina = siguiente;
+            totalPaginas = Math.Max(1, r?.TotalPages ?? 1);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+    }
+}

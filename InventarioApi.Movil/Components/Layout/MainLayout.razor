@@ -1,0 +1,130 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject AvisosApp Avisos
+@inject CarritoCompras Carrito
+
+<main class="contenido">
+    <ErrorBoundary @ref="limite">
+        <ChildContent>
+            @Body
+        </ChildContent>
+        <ErrorContent>
+            <div class="error-app">
+                <Icono Nombre="alerta" Tamanio="44" />
+                <h2>Algo salió mal</h2>
+                <p class="tenue">Ocurrió un error inesperado en la aplicación.</p>
+                <button class="boton boton-primario" @onclick="Recuperar">Volver a intentar</button>
+            </div>
+        </ErrorContent>
+    </ErrorBoundary>
+</main>
+
+@if (Avisos.Actual is { } aviso)
+{
+    <div class="toast @(aviso.EsError ? "toast-error" : "")" @key="aviso.Id">
+        <span>@aviso.Texto</span>
+        @if (aviso.Enlace != null)
+        {
+            <a href="@aviso.Enlace" @onclick="Avisos.Ocultar">@aviso.TextoEnlace</a>
+        }
+    </div>
+}
+
+@* Las pestañas de abajo cambian según el rol del usuario *@
+<nav class="barra-inferior">
+    @foreach (var p in pestanias)
+    {
+        <NavLink class="pestania" href="@p.Ruta" Match="@(p.Ruta == "" ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+            <span class="pestania-icono">
+                <Icono Nombre="@p.Icono" Tamanio="23" />
+                @if (p.EsCarrito && Carrito.Unidades > 0)
+                {
+                    <span class="insignia">@Carrito.Unidades</span>
+                }
+            </span>
+            <span>@p.Texto</span>
+        </NavLink>
+    }
+</nav>
+
+@code {
+    private record Pestania(string Ruta, string Texto, string Icono, bool EsCarrito = false);
+
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private ErrorBoundary? limite;
+    private List<Pestania> pestanias = new();
+    private bool irArriba;
+
+    protected override void OnInitialized()
+    {
+        Avisos.Cambio += Refrescar;
+        Carrito.Cambio += Refrescar;
+        Nav.LocationChanged += AlNavegar;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var usuario = EstadoAuth == null ? null : (await EstadoAuth).User;
+        var rol = usuario?.Identity?.IsAuthenticated == true
+            ? (usuario.IsInRole("Admin") ? "Admin" : usuario.IsInRole("Cajero") ? "Cajero" : "Cliente")
+            : null;
+
+        pestanias = rol switch
+        {
+            "Admin" => new()
+            {
+                new("", "Stock", "caja"),
+                new("ingreso", "Ingreso", "camion"),
+                new("reportes", "Reportes", "archivo"),
+                new("mas", "Más", "menu")
+            },
+            "Cajero" => new()
+            {
+                new("", "Catálogo", "caja"),
+                new("ventas", "Ventas", "tendencia"),
+                new("cuenta", "Cuenta", "usuario")
+            },
+            "Cliente" => new()
+            {
+                new("", "Inicio", "inicio"),
+                new("carrito", "Carrito", "carrito", true),
+                new("mis-compras", "Mis compras", "bolsa"),
+                new("cuenta", "Cuenta", "usuario")
+            },
+            _ => new()
+            {
+                new("", "Inicio", "inicio"),
+                new("carrito", "Carrito", "carrito", true),
+                new("login", "Ingresar", "usuario")
+            }
+        };
+    }
+
+    private void AlNavegar(object? sender, LocationChangedEventArgs e)
+    {
+        irArriba = true;
+        limite?.Recover();
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!irArriba) return;
+        irArriba = false;
+        try { await JS.InvokeVoidAsync("scrollTo", 0, 0); } catch { }
+    }
+
+    private void Recuperar() => limite?.Recover();
+
+    private void Refrescar() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Avisos.Cambio -= Refrescar;
+        Carrito.Cambio -= Refrescar;
+        Nav.LocationChanged -= AlNavegar;
+    }
+}

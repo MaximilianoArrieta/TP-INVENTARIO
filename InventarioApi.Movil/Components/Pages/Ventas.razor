@@ -1,0 +1,107 @@
+﻿@page "/ventas"
+@attribute [Authorize(Roles = "Admin,Cajero")]
+@inject ApiClient Api
+
+<Encabezado Titulo="@(esAdmin ? "Ventas" : "Mis ventas")" Volver="esAdmin" />
+
+<div class="filtros">
+    <input type="date" aria-label="Desde" @bind="desde" @bind:after="() => Cargar(true)" />
+    <input type="date" aria-label="Hasta" @bind="hasta" @bind:after="() => Cargar(true)" />
+</div>
+
+<div class="pagina">
+    @if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    @if (ventas == null)
+    {
+        <Cargando />
+    }
+    else if (ventas.Count == 0)
+    {
+        <p class="vacio">No hay ventas en este período.</p>
+    }
+    else
+    {
+        foreach (var v in ventas)
+        {
+            <article class="tarjeta-lista" @key="v.Id" @onclick="() => Alternar(v.Id)">
+                <div class="tl-fila">
+                    <span class="tl-titulo">
+                        N.º @v.Id
+                        <span class="etiqueta @(v.Canal == "App" ? "etiqueta-app" : "etiqueta-caja")">@(v.Canal ?? "Caja")</span>
+                    </span>
+                    <span class="tl-monto">@Formato.Moneda(v.Total)</span>
+                </div>
+                <div class="tl-sub">@Formato.Fecha(v.Fecha) · @v.Cliente</div>
+                @if (esAdmin)
+                {
+                    <div class="tl-sub">Registrada por @v.Usuario</div>
+                }
+                @if (abiertas.Contains(v.Id))
+                {
+                    <div class="tl-detalle">
+                        @foreach (var d in v.Detalles)
+                        {
+                            <div class="tl-fila">
+                                <span>@d.Cantidad × @d.Producto</span>
+                                <span>@Formato.Moneda(d.Subtotal)</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </article>
+        }
+        if (pagina < totalPaginas)
+        {
+            <button class="boton boton-secundario boton-bloque" @onclick="() => Cargar(false)">Ver más</button>
+        }
+    }
+</div>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private bool esAdmin;
+    private List<VentaVista>? ventas;
+    private int pagina, totalPaginas = 1;
+    private DateTime? desde, hasta;
+    private readonly HashSet<int> abiertas = new();
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EstadoAuth != null) esAdmin = (await EstadoAuth).User.IsInRole("Admin");
+        await Cargar(true);
+    }
+
+    private async Task Cargar(bool desdeElPrincipio)
+    {
+        error = null;
+        var siguiente = desdeElPrincipio ? 1 : pagina + 1;
+        if (desdeElPrincipio) ventas = null;
+        try
+        {
+            var url = $"api/ventas?pageNumber={siguiente}&pageSize=15";
+            if (desde.HasValue) url += $"&desde={desde:yyyy-MM-dd}";
+            if (hasta.HasValue) url += $"&hasta={hasta:yyyy-MM-dd}";
+            var r = await Api.GetAsync<PagedResult<VentaVista>>(url);
+            var nuevas = r?.Items ?? new();
+            ventas = ventas == null ? nuevas : ventas.Concat(nuevas).ToList();
+            pagina = siguiente;
+            totalPaginas = Math.Max(1, r?.TotalPages ?? 1);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+            ventas ??= new();
+        }
+    }
+
+    private void Alternar(int id)
+    {
+        if (!abiertas.Remove(id)) abiertas.Add(id);
+    }
+}

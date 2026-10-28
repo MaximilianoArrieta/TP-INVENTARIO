@@ -1,0 +1,119 @@
+﻿@page "/servidor"
+@inject ConfiguracionApp Config
+@inject ApiClient Api
+@inject SesionUsuario Sesion
+@inject CarritoCompras Carro
+@inject AvisosApp Avisos
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Servidor" Volver="true" MostrarCarrito="false" />
+
+<div class="pagina">
+    <section class="panel">
+        <h2 class="panel-titulo">¿A qué API se conecta la app?</h2>
+        <div class="medios">
+            <label class="medio @(opcion == "publicado" ? "medio-activo" : "")">
+                <input type="radio" name="servidor" checked="@(opcion == "publicado")" @onchange="@(() => Elegir("publicado"))" />
+                <span class="menu-texto">Publicado (recomendado)<small>@ConfiguracionApp.ServidorPublicado</small></span>
+            </label>
+            <label class="medio @(opcion == "local" ? "medio-activo" : "")">
+                <input type="radio" name="servidor" checked="@(opcion == "local")" @onchange="@(() => Elegir("local"))" />
+                <span class="menu-texto">API en la PC (solo emulador)<small>@ConfiguracionApp.ServidorLocalEmulador</small></span>
+            </label>
+            <label class="medio @(opcion == "otro" ? "medio-activo" : "")">
+                <input type="radio" name="servidor" checked="@(opcion == "otro")" @onchange="@(() => Elegir("otro"))" />
+                <span class="menu-texto">Otra dirección<small>Por ejemplo https://mi-api.com/</small></span>
+            </label>
+        </div>
+
+        @if (opcion == "otro")
+        {
+            <label class="campo" style="margin-top:14px">
+                <span>Dirección de la API</span>
+                <input type="url" autocapitalize="none" placeholder="https://" @bind="otra" @bind:event="oninput" />
+            </label>
+        }
+    </section>
+
+    @if (resultado != null)
+    {
+        <div class="alerta @(resultadoOk ? "alerta-ok" : "alerta-error")">@resultado</div>
+    }
+
+    <div class="acciones">
+        <button class="boton boton-secundario" disabled="@probando" @onclick="Probar">
+            @(probando ? "Probando…" : "Probar conexión")
+        </button>
+        <button class="boton boton-primario" disabled="@probando" @onclick="Guardar">Guardar</button>
+    </div>
+
+    <p class="nota">Al cambiar de servidor se cierra la sesión y se vacía el carrito, porque los usuarios y productos son de cada servidor.</p>
+</div>
+
+@code {
+    private string opcion = "publicado";
+    private string otra = "";
+    private bool probando, resultadoOk;
+    private string? resultado;
+
+    protected override void OnInitialized()
+    {
+        var actual = Config.UrlServidor;
+        if (actual == ConfiguracionApp.ServidorPublicado) opcion = "publicado";
+        else if (actual == ConfiguracionApp.ServidorLocalEmulador) opcion = "local";
+        else
+        {
+            opcion = "otro";
+            otra = actual;
+        }
+    }
+
+    private string? UrlElegida => opcion switch
+    {
+        "publicado" => ConfiguracionApp.ServidorPublicado,
+        "local" => ConfiguracionApp.ServidorLocalEmulador,
+        _ => ConfiguracionApp.EsValida(otra) ? ConfiguracionApp.Normalizar(otra) : null
+    };
+
+    private void Elegir(string valor)
+    {
+        opcion = valor;
+        resultado = null;
+    }
+
+    private async Task Probar()
+    {
+        var url = UrlElegida;
+        if (url == null)
+        {
+            resultadoOk = false;
+            resultado = "La dirección no es válida (tiene que empezar con http:// o https://).";
+            return;
+        }
+
+        probando = true;
+        (resultadoOk, resultado) = await Api.ProbarServidorAsync(url);
+        probando = false;
+    }
+
+    private async Task Guardar()
+    {
+        var url = UrlElegida;
+        if (url == null)
+        {
+            resultadoOk = false;
+            resultado = "La dirección no es válida (tiene que empezar con http:// o https://).";
+            return;
+        }
+
+        if (url != Config.UrlServidor)
+        {
+            Config.CambiarServidor(url);
+            await Sesion.CerrarSesionAsync();
+            Carro.Vaciar();
+            Catalogo.Invalidar();
+            Avisos.Mostrar("Servidor actualizado.");
+        }
+        Nav.NavigateTo("", replace: true);
+    }
+}

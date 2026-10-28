@@ -1,0 +1,91 @@
+﻿@page "/login"
+@inject ApiClient Api
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Ingresar" Volver="true" MostrarCarrito="false" />
+
+<div class="pagina">
+    <section class="panel">
+        <div class="perfil" style="margin-bottom:18px">
+            <div class="marca-logo" style="width:48px;height:48px;border-radius:12px"><Icono Nombre="bolsa" Tamanio="26" /></div>
+            <div>
+                <h2>Caja y Stock</h2>
+                <span class="tenue">Ingresá con tu usuario</span>
+            </div>
+        </div>
+
+        @if (Volver == "checkout")
+        {
+            <div class="alerta alerta-info" style="margin-bottom:14px">Para terminar la compra ingresá o creá tu cuenta.</div>
+        }
+        @if (error != null)
+        {
+            <div class="alerta alerta-error" style="margin-bottom:14px">@error</div>
+        }
+
+        <form @onsubmit="Ingresar">
+            <label class="campo">
+                <span>Usuario</span>
+                <input autocomplete="username" autocapitalize="none" @bind="usuario" @bind:event="oninput" />
+            </label>
+            <label class="campo">
+                <span>Contraseña</span>
+                <input type="password" autocomplete="current-password" @bind="password" @bind:event="oninput" />
+            </label>
+            <button type="submit" class="boton boton-primario boton-bloque" disabled="@enviando">
+                @(enviando ? "Ingresando…" : "Ingresar")
+            </button>
+        </form>
+    </section>
+
+    <section class="panel centrado">
+        <p>¿No tenés cuenta?</p>
+        <a class="boton boton-secundario boton-bloque" style="margin-top:10px" href="@EnlaceRegistro">Crear cuenta de cliente</a>
+    </section>
+
+    <a class="nota centrado" href="servidor">Servidor: @Api.Servidor</a>
+</div>
+
+@code {
+    // Pantalla a la que se vuelve después de ingresar (por ejemplo, el pago)
+    [SupplyParameterFromQuery] public string? Volver { get; set; }
+
+    private string usuario = "", password = "";
+
+    private string EnlaceRegistro =>
+        string.IsNullOrEmpty(Volver) ? "registro" : "registro?volver=" + Uri.EscapeDataString(Volver);
+    private string? error;
+    private bool enviando;
+
+    private async Task Ingresar()
+    {
+        if (enviando) return;
+        error = null;
+        if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrEmpty(password))
+        {
+            error = "Completá usuario y contraseña.";
+            return;
+        }
+
+        enviando = true;
+        try
+        {
+            var r = await Api.PostAsync<LoginRespuesta>("api/auth/login", new { nombreUsuario = usuario.Trim(), password });
+            await Sesion.IniciarSesionAsync(r!.Token);
+            Catalogo.Invalidar(); // el personal ve el catálogo con el stock en números
+
+            // El cliente vuelve a donde estaba; el personal va al catálogo
+            var destino = r.Rol == "Cliente" && !string.IsNullOrEmpty(Volver) ? Volver : "";
+            Nav.NavigateTo(destino, replace: true);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Estado == HttpStatusCode.Unauthorized ? "Usuario o contraseña incorrectos." : ex.Message;
+        }
+        finally
+        {
+            enviando = false;
+        }
+    }
+}

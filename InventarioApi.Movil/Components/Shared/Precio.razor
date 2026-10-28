@@ -1,0 +1,16 @@
+﻿@* Precio al estilo de las tiendas online: "$ 1.234" con los centavos chiquitos *@
+<span class="precio @Clase">
+    <span class="precio-signo">$</span><span>@Formato.Entero(Valor)</span>@if (centavos != "00")
+    {
+        <sup>@centavos</sup>
+    }
+</span>
+
+@code {
+    [Parameter] public decimal Valor { get; set; }
+    [Parameter] public string? Clase { get; set; }
+
+    private string centavos = "00";
+
+    protected override void OnParametersSet() => centavos = Formato.Centavos(Valor);
+}

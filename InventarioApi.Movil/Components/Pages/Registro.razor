@@ -1,0 +1,85 @@
+﻿@page "/registro"
+@inject ApiClient Api
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Crear cuenta" Volver="true" MostrarCarrito="false" />
+
+<form class="pagina" @onsubmit="Registrar">
+    <section class="panel">
+        <h2 class="panel-titulo">Tus datos</h2>
+        <div class="fila-2">
+            <label class="campo"><span>Nombre</span><input autocomplete="given-name" @bind="nombre" @bind:event="oninput" /></label>
+            <label class="campo"><span>Apellido</span><input autocomplete="family-name" @bind="apellido" @bind:event="oninput" /></label>
+        </div>
+        <label class="campo"><span>Email</span><input type="email" autocomplete="email" autocapitalize="none" @bind="email" @bind:event="oninput" /></label>
+        <label class="campo"><span>Teléfono <span class="tenue">(opcional)</span></span><input type="tel" autocomplete="tel" @bind="telefono" @bind:event="oninput" /></label>
+        <label class="campo"><span>Dirección de entrega <span class="tenue">(opcional)</span></span><input autocomplete="street-address" @bind="direccion" @bind:event="oninput" /></label>
+    </section>
+
+    <section class="panel">
+        <h2 class="panel-titulo">Usuario y contraseña</h2>
+        <label class="campo"><span>Usuario</span><input autocomplete="username" autocapitalize="none" @bind="usuario" @bind:event="oninput" /></label>
+        <label class="campo"><span>Contraseña <span class="tenue">(mínimo 6 caracteres)</span></span><input type="password" autocomplete="new-password" @bind="password" @bind:event="oninput" /></label>
+        <label class="campo"><span>Repetí la contraseña</span><input type="password" autocomplete="new-password" @bind="repetir" @bind:event="oninput" /></label>
+    </section>
+
+    @if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    <button type="submit" class="boton boton-primario boton-bloque" disabled="@enviando">
+        @(enviando ? "Creando la cuenta…" : "Crear cuenta")
+    </button>
+    <p class="nota centrado">Las cuentas creadas desde la app son de cliente: sirven para comprar en la tienda.</p>
+</form>
+
+@code {
+    [SupplyParameterFromQuery] public string? Volver { get; set; }
+
+    private string nombre = "", apellido = "", email = "", telefono = "", direccion = "";
+    private string usuario = "", password = "", repetir = "";
+    private string? error;
+    private bool enviando;
+
+    private async Task Registrar()
+    {
+        if (enviando) return;
+        error = null;
+
+        if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(apellido)) { error = "Completá tu nombre y apellido."; return; }
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) { error = "Ingresá un email válido."; return; }
+        if (string.IsNullOrWhiteSpace(usuario)) { error = "Elegí un nombre de usuario."; return; }
+        if (password.Length < 6) { error = "La contraseña debe tener al menos 6 caracteres."; return; }
+        if (password != repetir) { error = "Las contraseñas no coinciden."; return; }
+
+        enviando = true;
+        try
+        {
+            await Api.PostAsync<object>("api/auth/registro-cliente", new
+            {
+                nombreUsuario = usuario.Trim(),
+                password,
+                nombre = nombre.Trim(),
+                apellido = apellido.Trim(),
+                email = email.Trim(),
+                telefono = string.IsNullOrWhiteSpace(telefono) ? null : telefono.Trim(),
+                direccion = string.IsNullOrWhiteSpace(direccion) ? null : direccion.Trim()
+            });
+
+            // Cuenta creada: se ingresa directamente
+            var r = await Api.PostAsync<LoginRespuesta>("api/auth/login", new { nombreUsuario = usuario.Trim(), password });
+            await Sesion.IniciarSesionAsync(r!.Token);
+            Nav.NavigateTo(string.IsNullOrEmpty(Volver) ? "" : Volver, replace: true);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            enviando = false;
+        }
+    }
+}

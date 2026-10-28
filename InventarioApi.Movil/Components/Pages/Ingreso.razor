@@ -1,0 +1,277 @@
+﻿@page "/ingreso"
+@attribute [Authorize(Roles = "Admin")]
+@implements IDisposable
+@inject ApiClient Api
+@inject AvisosApp Avisos
+
+<Encabezado Titulo="Ingreso de mercadería" />
+
+<div class="pagina">
+    @if (registrado != null)
+    {
+        <div class="alerta alerta-ok">
+            <strong>Ingreso N.º @registrado.Id registrado</strong>
+            Entraron @Formato.Unidades(registrado.Detalles.Sum(d => d.Cantidad)) de @registrado.Proveedor por @Formato.Moneda(registrado.Total). El stock ya está actualizado.
+        </div>
+    }
+
+    <section class="panel">
+        <h2 class="panel-titulo">Proveedor</h2>
+        @if (!nuevoProveedor)
+        {
+            <label class="campo">
+                <span>¿Quién entrega la mercadería?</span>
+                <select @bind="proveedorId">
+                    <option value="0">Elegí un proveedor…</option>
+                    @foreach (var p in proveedores)
+                    {
+                        <option value="@p.Id">@p.RazonSocial</option>
+                    }
+                </select>
+            </label>
+            <button class="boton-link" @onclick="() => nuevoProveedor = true">+ Agregar un proveedor nuevo</button>
+        }
+        else
+        {
+            <label class="campo"><span>Razón social</span><input @bind="rsNuevo" @bind:event="oninput" /></label>
+            <label class="campo"><span>Teléfono <span class="tenue">(opcional)</span></span><input type="tel" @bind="telNuevo" @bind:event="oninput" /></label>
+            <div class="acciones">
+                <button class="boton boton-secundario boton-chico" @onclick="() => nuevoProveedor = false">Cancelar</button>
+                <button class="boton boton-primario boton-chico" disabled="@guardandoProveedor" @onclick="GuardarProveedor">Guardar proveedor</button>
+            </div>
+        }
+    </section>
+
+    <section class="panel">
+        <h2 class="panel-titulo">Productos que ingresan</h2>
+        <div class="buscador" style="border:1px solid #cfcfcf">
+            <Icono Nombre="buscar" Tamanio="18" />
+            <input type="search" placeholder="Buscar producto para agregar…" @bind="busqueda" @bind:event="oninput" @bind:after="BuscarConPausa" />
+        </div>
+
+        @if (resultados.Count > 0)
+        {
+            <div class="resultados">
+                @foreach (var p in resultados)
+                {
+                    <button class="resultado" @onclick="() => AgregarLinea(p)">
+                        <span>
+                            @p.Nombre
+                            <span class="tl-sub" style="display:block">Stock actual: @p.Stock</span>
+                        </span>
+                        <Icono Nombre="mas" Tamanio="20" />
+                    </button>
+                }
+            </div>
+        }
+
+        @if (lineas.Count == 0)
+        {
+            <p class="nota" style="margin-top:12px">Todavía no agregaste productos.</p>
+        }
+        else
+        {
+            <div style="margin-top:6px">
+                @foreach (var l in lineas)
+                {
+                    <div class="linea-ingreso" @key="l.ProductoId">
+                        <div class="li-cabecera">
+                            <div>
+                                <strong>@l.Nombre</strong>
+                                <div class="tl-sub">Stock: @l.StockActual → <strong>@(l.StockActual + Math.Max(0, l.Cantidad))</strong></div>
+                            </div>
+                            <button class="boton-link boton-link-peligro" @onclick="() => { lineas.Remove(l); }">Quitar</button>
+                        </div>
+                        <div class="li-campos">
+                            <label class="campo">
+                                <span>Cantidad</span>
+                                <input type="number" inputmode="numeric" min="1" @bind="l.Cantidad" />
+                            </label>
+                            <label class="campo">
+                                <span>Costo unitario $</span>
+                                <input type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" @bind="l.Costo" />
+                            </label>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="resumen-total">
+                <span>Costo total</span>
+                <strong>@Formato.Moneda(lineas.Sum(l => Math.Max(0, l.Cantidad) * (l.Costo ?? 0)))</strong>
+            </div>
+        }
+    </section>
+
+    @if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    <button class="boton boton-primario boton-bloque" disabled="@(guardando || lineas.Count == 0)" @onclick="Confirmar">
+        @(guardando ? "Registrando…" : "Confirmar ingreso")
+    </button>
+</div>
+
+@code {
+    private class LineaIngreso
+    {
+        public int ProductoId { get; set; }
+        public string Nombre { get; set; } = "";
+        public int StockActual { get; set; }
+        public int Cantidad { get; set; } = 1;
+        public decimal? Costo { get; set; }
+    }
+
+    // Desde el detalle de un producto se llega con ese producto ya cargado
+    [SupplyParameterFromQuery] public int? Producto { get; set; }
+
+    private List<ProveedorItem> proveedores = new();
+    private int proveedorId;
+    private bool nuevoProveedor, guardandoProveedor, guardando;
+    private string rsNuevo = "", telNuevo = "";
+
+    private string busqueda = "";
+    private List<ProductoItem> resultados = new();
+    private readonly List<LineaIngreso> lineas = new();
+    private CancellationTokenSource? pausa;
+
+    private IngresoVista? registrado;
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProveedores();
+
+        if (Producto is int id)
+        {
+            try
+            {
+                var p = await Api.GetAsync<ProductoItem>($"api/productos/{id}");
+                if (p != null) AgregarLinea(p);
+            }
+            catch (ApiException) { }
+        }
+    }
+
+    private async Task CargarProveedores()
+    {
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<ProveedorItem>>("api/proveedores?pageNumber=1&pageSize=100");
+            proveedores = r?.Items ?? new();
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+    }
+
+    private async Task GuardarProveedor()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(rsNuevo))
+        {
+            error = "Completá la razón social del proveedor.";
+            return;
+        }
+
+        guardandoProveedor = true;
+        try
+        {
+            var nuevo = await Api.PostAsync<ProveedorItem>("api/proveedores", new
+            {
+                razonSocial = rsNuevo.Trim(),
+                contacto = (string?)null,
+                telefono = string.IsNullOrWhiteSpace(telNuevo) ? null : telNuevo.Trim(),
+                email = (string?)null,
+                direccion = (string?)null
+            });
+            await CargarProveedores();
+            proveedorId = nuevo?.Id ?? 0;
+            nuevoProveedor = false;
+            rsNuevo = telNuevo = "";
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            guardandoProveedor = false;
+        }
+    }
+
+    private async Task BuscarConPausa()
+    {
+        pausa?.Cancel();
+        pausa = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(350, pausa.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(busqueda))
+        {
+            resultados = new();
+            return;
+        }
+
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<ProductoItem>>($"api/productos?pageNumber=1&pageSize=8&nombre={Uri.EscapeDataString(busqueda.Trim())}");
+            resultados = r?.Items ?? new();
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+    }
+
+    private void AgregarLinea(ProductoItem p)
+    {
+        registrado = null;
+        var existente = lineas.FirstOrDefault(l => l.ProductoId == p.Id);
+        if (existente != null)
+            existente.Cantidad++;
+        else
+            lineas.Add(new LineaIngreso { ProductoId = p.Id, Nombre = p.Nombre, StockActual = p.Stock });
+
+        busqueda = "";
+        resultados = new();
+    }
+
+    private async Task Confirmar()
+    {
+        error = null;
+        if (proveedorId <= 0) { error = "Elegí el proveedor."; return; }
+        if (lineas.Any(l => l.Cantidad <= 0)) { error = "Las cantidades tienen que ser mayores a cero."; return; }
+        if (lineas.Any(l => l.Costo == null || l.Costo < 0)) { error = "Completá el costo unitario de cada producto."; return; }
+
+        guardando = true;
+        try
+        {
+            registrado = await Api.PostAsync<IngresoVista>("api/compras", new
+            {
+                proveedorId,
+                detalles = lineas.Select(l => new { productoId = l.ProductoId, cantidad = l.Cantidad, precioUnitario = l.Costo!.Value }).ToList()
+            });
+            lineas.Clear();
+            Catalogo.Invalidar();
+            Avisos.Mostrar("Ingreso registrado: stock actualizado.");
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    public void Dispose() => pausa?.Cancel();
+}

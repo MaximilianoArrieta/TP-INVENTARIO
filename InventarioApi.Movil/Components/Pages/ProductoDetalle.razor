@@ -1,0 +1,212 @@
+﻿@page "/producto/{Id:int}"
+@inject ApiClient Api
+@inject CarritoCompras Carrito
+@inject AvisosApp Avisos
+@inject FotosProducto Fotos
+@inject NavigationManager Nav
+
+<Encabezado Titulo="Producto" Volver="true" />
+
+@if (producto == null)
+{
+    if (error != null)
+    {
+        <div class="alerta alerta-error">
+            @error
+            <button class="boton-link" @onclick="Cargar">Reintentar</button>
+        </div>
+    }
+    else
+    {
+        <Cargando />
+    }
+}
+else
+{
+    <div class="detalle-imagen">
+        <ImagenProducto Nombre="@producto.Nombre" Ruta="@producto.ImagenUrl" Semilla="producto.CategoriaId" />
+
+        @if (esAdmin)
+        {
+            <div class="foto-acciones">
+                <button class="boton-flotante" disabled="@subiendoFoto" @onclick="() => CambiarFoto(true)">
+                    <Icono Nombre="camara" Tamanio="16" /> Sacar foto
+                </button>
+                <button class="boton-flotante" disabled="@subiendoFoto" @onclick="() => CambiarFoto(false)">
+                    <Icono Nombre="imagen" Tamanio="16" /> Galería
+                </button>
+            </div>
+        }
+    </div>
+
+    <section class="detalle-cuerpo">
+        <span class="detalle-categoria">@producto.Categoria</span>
+        <h1 class="detalle-nombre">@producto.Nombre</h1>
+        <Precio Valor="producto.Precio" Clase="precio-grande" />
+
+        @if (!esPersonal && producto.Stock > 0)
+        {
+            <span class="cuotas">Mismo precio en 12 cuotas de @Formato.Moneda(producto.Precio / 12) sin interés</span>
+        }
+
+        @if (!producto.Activo)
+        {
+            <div class="alerta alerta-aviso">Este producto fue dado de baja y no se puede comprar.</div>
+        }
+
+        @if (esPersonal)
+        {
+            <Disponibilidad Stock="producto.Stock" VerNumero="true" />
+        }
+        else if (producto.Stock > 0)
+        {
+            <span class="detalle-stock">
+                Stock disponible
+                <span class="tenue">(@producto.Stock @(producto.Stock == 1 ? "disponible" : "disponibles"))</span>
+            </span>
+            <Disponibilidad Stock="producto.Stock" />
+        }
+        else
+        {
+            <Disponibilidad Stock="0" />
+        }
+
+        @if (!string.IsNullOrWhiteSpace(producto.Descripcion))
+        {
+            <h2 class="subtitulo">Descripción</h2>
+            <p class="detalle-descripcion">@producto.Descripcion</p>
+        }
+    </section>
+
+    if (error != null)
+    {
+        <div class="alerta alerta-error">@error</div>
+    }
+
+    if (esAdmin)
+    {
+        <section class="detalle-compra">
+            <a class="boton boton-secundario boton-bloque" href="ingreso?producto=@producto.Id">
+                <Icono Nombre="camion" Tamanio="18" /> Ingresar mercadería de este producto
+            </a>
+            @if (subiendoFoto)
+            {
+                <Cargando Texto="Subiendo la foto…" />
+            }
+        </section>
+    }
+    else if (!esPersonal && producto.Activo && producto.Stock > 0)
+    {
+        <section class="detalle-compra">
+            @if (Maximo > 0)
+            {
+                <div class="cantidad-fila">
+                    <span>Cantidad:</span>
+                    <Selector @bind-Valor="cantidad" Maximo="Maximo" />
+                    <span class="tenue">(máx. @Maximo)</span>
+                </div>
+                <button class="boton boton-primario boton-bloque" @onclick="ComprarAhora">Comprar ahora</button>
+                <button class="boton boton-secundario boton-bloque" @onclick="AgregarAlCarrito">Agregar al carrito</button>
+            }
+            else
+            {
+                <div class="alerta alerta-info">Ya tenés en el carrito todo el stock disponible de este producto.</div>
+                <a class="boton boton-secundario boton-bloque" href="carrito">Ver carrito</a>
+            }
+        </section>
+    }
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private ProductoItem? producto;
+    private string? error;
+    private int cantidad = 1;
+    private bool esAdmin, esPersonal, subiendoFoto;
+
+    // Lo que todavía se puede agregar, descontando lo que ya está en el carrito
+    private int Maximo => producto == null ? 0 : Math.Max(0, producto.Stock - Carrito.CantidadDe(producto.Id));
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (EstadoAuth != null)
+        {
+            var usuario = (await EstadoAuth).User;
+            esAdmin = usuario.IsInRole("Admin");
+            esPersonal = esAdmin || usuario.IsInRole("Cajero");
+        }
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        error = null;
+        try
+        {
+            producto = await Api.GetAsync<ProductoItem>($"api/productos/{Id}");
+            cantidad = Math.Clamp(cantidad, 1, Math.Max(1, Maximo));
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Estado == HttpStatusCode.NotFound ? "Este producto no existe." : ex.Message;
+        }
+    }
+
+    private bool Agregar()
+    {
+        error = null;
+        var problema = Carrito.Agregar(producto!, cantidad);
+        if (problema != null)
+        {
+            error = problema;
+            return false;
+        }
+        return true;
+    }
+
+    private void AgregarAlCarrito()
+    {
+        if (!Agregar()) return;
+        Avisos.Mostrar($"Agregaste {Formato.Unidades(cantidad)} al carrito", "carrito", "Ver carrito");
+        cantidad = 1;
+    }
+
+    private void ComprarAhora()
+    {
+        if (Agregar()) Nav.NavigateTo("carrito");
+    }
+
+    private async Task CambiarFoto(bool usarCamara)
+    {
+        error = null;
+        subiendoFoto = true;
+        try
+        {
+            var foto = await Fotos.ObtenerAsync(usarCamara);
+            if (foto == null) return;
+
+            await using (foto)
+            {
+                await Api.SubirImagenAsync($"api/productos/{Id}/imagen", foto, $"producto-{Id}.jpg");
+            }
+            await Cargar();
+            Catalogo.Invalidar();
+            Avisos.Mostrar("Foto actualizada.");
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            // Permiso de cámara denegado, sin cámara, etc.
+            error = ex.Message;
+        }
+        finally
+        {
+            subiendoFoto = false;
+        }
+    }
+}

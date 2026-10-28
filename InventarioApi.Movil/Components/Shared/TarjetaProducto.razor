@@ -1,0 +1,21 @@
+﻿<a class="tarjeta-producto @(Producto.Stock <= 0 ? "agotado" : "")" href="producto/@Producto.Id">
+    <div class="tp-imagen">
+        <ImagenProducto Nombre="@Producto.Nombre" Ruta="@Producto.ImagenUrl" Semilla="Producto.CategoriaId" />
+    </div>
+    <div class="tp-cuerpo">
+        <span class="tp-nombre">@Producto.Nombre</span>
+        <Precio Valor="Producto.Precio" Clase="tp-precio" />
+        @if (Producto.Stock > 0 && !VerStock)
+        {
+            <span class="cuotas">Mismo precio en 6 cuotas de @Formato.Moneda(Producto.Precio / 6)</span>
+        }
+        <Disponibilidad Stock="Producto.Stock" VerNumero="VerStock" />
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public ProductoItem Producto { get; set; } = default!;
+
+    // Admin y Cajero ven el número de stock en lugar de las frases para el cliente
+    [Parameter] public bool VerStock { get; set; }
+}

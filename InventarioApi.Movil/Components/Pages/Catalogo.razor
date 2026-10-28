@@ -1,0 +1,232 @@
+﻿@page "/"
+@implements IDisposable
+@inject ApiClient Api
+
+<PageTitle>Caja y Stock</PageTitle>
+
+<Encabezado>
+    <div class="buscador">
+        <Icono Nombre="buscar" Tamanio="18" />
+        <input type="search" placeholder="Buscar productos…" enterkeyhint="search"
+               @bind="busqueda" @bind:event="oninput" @bind:after="BuscarConPausa" />
+        @if (!string.IsNullOrEmpty(busqueda))
+        {
+            <button class="buscador-limpiar" @onclick="LimpiarBusqueda" aria-label="Borrar búsqueda">
+                <Icono Nombre="cerrar" Tamanio="16" />
+            </button>
+        }
+    </div>
+</Encabezado>
+
+<div class="chips">
+    <button class="chip @(categoriaId == null ? "chip-activo" : "")" @onclick="() => ElegirCategoria(null)">Todas</button>
+    @foreach (var c in categorias)
+    {
+        <button class="chip @(categoriaId == c.Id ? "chip-activo" : "")" @onclick="() => ElegirCategoria(c.Id)">@c.Nombre</button>
+    }
+</div>
+
+<AuthorizeView>
+    <NotAuthorized>
+        <a class="aviso-ingreso" href="login">
+            <span>Ingresá o creá tu cuenta para comprar</span>
+            <Icono Nombre="derecha" Tamanio="18" />
+        </a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (error != null)
+{
+    <div class="alerta alerta-error">
+        @error
+        <button class="boton-link" @onclick="() => Cargar(true)">Reintentar</button>
+    </div>
+}
+
+@if (productos == null)
+{
+    if (error == null)
+    {
+        <Cargando Texto="Cargando productos…" />
+    }
+}
+else if (productos.Count == 0)
+{
+    <div class="vacio">
+        <Icono Nombre="buscar" Tamanio="44" />
+        <h2>No encontramos productos</h2>
+        <p>Probá con otra palabra o con otra categoría.</p>
+    </div>
+}
+else
+{
+    <p class="resultado-cant">@total @(total == 1 ? "producto" : "productos")</p>
+    <div class="grilla">
+        @foreach (var p in productos)
+        {
+            <TarjetaProducto @key="p.Id" Producto="p" VerStock="esPersonal" />
+        }
+    </div>
+
+    if (pagina < totalPaginas)
+    {
+        <div class="pagina">
+            <button class="boton boton-secundario boton-bloque" disabled="@cargandoMas" @onclick="CargarMas">
+                @(cargandoMas ? "Cargando…" : "Ver más productos")
+            </button>
+        </div>
+    }
+}
+
+@code {
+    // Lo último que se mostró, para no volver a pedirlo al volver desde el detalle de un producto
+    private class EstadoGuardado
+    {
+        public string Busqueda = "";
+        public int? CategoriaId;
+        public List<CategoriaItem> Categorias = new();
+        public List<ProductoItem> Productos = new();
+        public int Pagina, TotalPaginas, Total;
+        public DateTime Momento;
+    }
+
+    private static EstadoGuardado? guardado;
+
+    // Después de comprar o ingresar mercadería el stock cambió: se vuelve a pedir todo
+    public static void Invalidar() => guardado = null;
+
+    [CascadingParameter] private Task<AuthenticationState>? EstadoAuth { get; set; }
+
+    private bool esPersonal;
+    private string busqueda = "";
+    private int? categoriaId;
+    private List<CategoriaItem> categorias = new();
+    private List<ProductoItem>? productos;
+    private int pagina = 1, totalPaginas = 1, total;
+    private bool cargandoMas;
+    private string? error;
+    private int consulta;
+    private CancellationTokenSource? pausa;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EstadoAuth != null)
+        {
+            var usuario = (await EstadoAuth).User;
+            esPersonal = usuario.IsInRole("Admin") || usuario.IsInRole("Cajero");
+        }
+
+        if (guardado != null && DateTime.Now - guardado.Momento < TimeSpan.FromMinutes(2))
+        {
+            busqueda = guardado.Busqueda;
+            categoriaId = guardado.CategoriaId;
+            categorias = guardado.Categorias;
+            productos = guardado.Productos;
+            pagina = guardado.Pagina;
+            totalPaginas = guardado.TotalPaginas;
+            total = guardado.Total;
+            return;
+        }
+
+        await Task.WhenAll(CargarCategorias(), Cargar(true));
+        if (productos != null) Guardar();
+    }
+
+    private async Task CargarCategorias()
+    {
+        try
+        {
+            var r = await Api.GetAsync<PagedResult<CategoriaItem>>("api/categorias?pageNumber=1&pageSize=50");
+            categorias = r?.Items.OrderBy(c => c.Nombre).ToList() ?? new();
+        }
+        catch (ApiException)
+        {
+            // Sin categorías igual se puede usar el catálogo
+        }
+    }
+
+    private async Task Cargar(bool desdeElPrincipio)
+    {
+        var numero = ++consulta;
+        error = null;
+        if (desdeElPrincipio)
+        {
+            pagina = 1;
+            productos = null;
+        }
+
+        try
+        {
+            var url = $"api/productos?pageNumber={pagina}&pageSize=20";
+            if (categoriaId != null) url += $"&categoriaId={categoriaId}";
+            if (!string.IsNullOrWhiteSpace(busqueda)) url += $"&nombre={Uri.EscapeDataString(busqueda.Trim())}";
+
+            var r = await Api.GetAsync<PagedResult<ProductoItem>>(url);
+            if (numero != consulta) return; // llegó tarde: ya se pidió otra búsqueda
+
+            var nuevos = r?.Items ?? new();
+            if (desdeElPrincipio || productos == null) productos = nuevos;
+            else productos.AddRange(nuevos);
+
+            totalPaginas = Math.Max(1, r?.TotalPages ?? 1);
+            total = r?.TotalCount ?? productos.Count;
+            Guardar();
+        }
+        catch (ApiException ex)
+        {
+            if (numero == consulta) error = ex.Message;
+        }
+    }
+
+    private void Guardar() => guardado = new EstadoGuardado
+    {
+        Busqueda = busqueda,
+        CategoriaId = categoriaId,
+        Categorias = categorias,
+        Productos = productos ?? new(),
+        Pagina = pagina,
+        TotalPaginas = totalPaginas,
+        Total = total,
+        Momento = DateTime.Now
+    };
+
+    // Espera a que se deje de escribir antes de buscar
+    private async Task BuscarConPausa()
+    {
+        pausa?.Cancel();
+        pausa = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(400, pausa.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        await Cargar(true);
+    }
+
+    private async Task LimpiarBusqueda()
+    {
+        busqueda = "";
+        await Cargar(true);
+    }
+
+    private async Task ElegirCategoria(int? id)
+    {
+        if (categoriaId == id) return;
+        categoriaId = id;
+        await Cargar(true);
+    }
+
+    private async Task CargarMas()
+    {
+        cargandoMas = true;
+        pagina++;
+        await Cargar(false);
+        if (error != null) pagina--;
+        cargandoMas = false;
+    }
+
+    public void Dispose() => pausa?.Cancel();
+}
