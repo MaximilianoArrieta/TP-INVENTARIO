@@ -2,6 +2,12 @@
 
 Trabajo práctico de **Programación Web (TP6)**: frontend **Blazor WebAssembly standalone** orientado a escritorio, vinculado a la **API REST en ASP.NET Core (.NET 10)** desarrollada en el TP5. Funciona como el punto de venta de un supermercado: registra ventas en la caja, ingresos de mercadería y mantiene el stock actualizado, con reportes en PDF, control de acceso por roles y auditoría.
 
+> **Este repositorio contiene dos trabajos que comparten la misma API y la misma base de datos:**
+> - **TP6 Programación Web** (este documento): caja y stock en Blazor WebAssembly. Versión entregada: tag [`tp6-web-entrega`](../../releases/tag/tp6-web-entrega).
+> - **TP6 Programación Móvil**: tienda con catálogo, carrito y pago simulado para Android en Blazor Hybrid (.NET MAUI). Ver **[README-movil.md](README-movil.md)**.
+>
+> Los cambios que necesitó la app móvil se agregaron a la API sin modificar lo que usa la web, así que ambos funcionan al mismo tiempo.
+
 ## Sistema publicado
 
 | | Dirección |
@@ -55,10 +61,11 @@ El sistema publicado tiene cargados datos de demostración: 23 productos en 5 ca
 ```
 TP INVENTARIO/
 ├── InventarioApi/                → API: controladores, middleware de errores, servicios (PDF, correo), Program.cs
-│   └── InventarioApi.slnx        → solución (abre los 4 proyectos)
+│   └── InventarioApi.slnx        → solución (abre los 5 proyectos)
 ├── InventarioApi.Domain/         → entidades y clases de paginado
 ├── InventarioApi.Infrastructure/ → AppDbContext (con auditoría), migraciones, JWT, datos iniciales
-└── InventarioApi.Web/            → frontend Blazor WebAssembly standalone
+├── InventarioApi.Web/            → frontend Blazor WebAssembly standalone (TP web)
+└── InventarioApi.Movil/          → app Android .NET MAUI Blazor Hybrid (TP móvil)
 ```
 
 El frontend es una aplicación independiente que corre en el navegador y se comunica con la API por HTTPS, enviando el token JWT en cada pedido.
@@ -76,7 +83,8 @@ SQL Server, **normalizada hasta tercera forma normal**. Diagrama entidad-relaci�
   - Los roles están en su propia tabla (`Roles`), referenciada por `Usuarios.RolId`.
   - El `PrecioUnitario` de cada detalle no es redundante: es el precio vigente en el momento de la operación y depende de la línea, no del producto.
   - `Producto.Stock` es una redundancia controlada que se mantiene dentro de transacciones, para validar ventas al instante.
-- Índices únicos: nombre de usuario, nombre de rol, nombre de categoría y el par (venta/compra, producto) en los detalles.
+- Para la tienda de la app móvil se agregaron las tablas `MediosPago` y `Pagos`, el rol `Cliente`, la columna `Ventas.Canal` (Caja o App) y `Usuarios.ClienteId`. El detalle de cómo respetan la 3FN está en [README-movil.md](README-movil.md#base-de-datos).
+- Índices únicos: nombre de usuario, nombre de rol, nombre de categoría, el par (venta/compra, producto) en los detalles, `Pagos.VentaId` y `Usuarios.ClienteId`.
 
 ## Seguridad
 

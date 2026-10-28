@@ -1,5 +1,6 @@
 erDiagram
     ROL ||--o{ USUARIO : asigna
+    CLIENTE ||--o| USUARIO : "cuenta de la app"
     CATEGORIA ||--o{ PRODUCTO : clasifica
     PRODUCTO ||--o{ DETALLE_COMPRA : incluye
     PRODUCTO ||--o{ DETALLE_VENTA : incluye
@@ -7,8 +8,10 @@ erDiagram
     CLIENTE ||--o{ VENTA : realiza
     USUARIO ||--o{ COMPRA : registra
     USUARIO ||--o{ VENTA : registra
-    COMPRA ||--o{ DETALLE_COMPRA : contiene
-    VENTA ||--o{ DETALLE_VENTA : contiene
+    COMPRA ||--|{ DETALLE_COMPRA : contiene
+    VENTA ||--|{ DETALLE_VENTA : contiene
+    VENTA ||--o| PAGO : "se paga con"
+    MEDIO_PAGO ||--o{ PAGO : "medio de"
     USUARIO |o--o{ AUDITORIA : genera
     USUARIO |o--o{ LOG_ERROR : asociado
 
@@ -24,6 +27,7 @@ erDiagram
         string Email
         bool Activo
         int RolId FK
+        int ClienteId FK "UK, admite NULL"
     }
 
     CATEGORIA {
@@ -81,6 +85,7 @@ erDiagram
         datetime Fecha
         int ClienteId FK
         int UsuarioId FK
+        string Canal "Caja o App"
     }
 
     DETALLE_VENTA {
@@ -89,6 +94,22 @@ erDiagram
         int ProductoId FK
         int Cantidad
         decimal PrecioUnitario
+    }
+
+    MEDIO_PAGO {
+        int Id PK
+        string Nombre UK
+        bool RequiereTarjeta
+        bool PermiteCuotas
+    }
+
+    PAGO {
+        int Id PK
+        int VentaId FK "UK"
+        int MedioPagoId FK
+        int Cuotas
+        string UltimosDigitos
+        string CodigoAutorizacion
     }
 
     AUDITORIA {
