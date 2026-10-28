@@ -131,6 +131,7 @@ public class ReportesService
                 v.Fecha,
                 Cliente = v.Cliente!.Nombre + " " + v.Cliente.Apellido,
                 Cajero = v.Usuario!.NombreUsuario,
+                v.Canal,
                 Unidades = v.Detalles.Sum(d => d.Cantidad),
                 Total = v.Detalles.Sum(d => d.Cantidad * d.PrecioUnitario)
             })
@@ -166,6 +167,24 @@ public class ReportesService
                 return;
             }
 
+            Subtitulo(col, "Ventas por canal");
+            col.Item().Table(t =>
+            {
+                t.ColumnsDefinition(c => { c.RelativeColumn(5); c.RelativeColumn(1.5f); c.RelativeColumn(2.2f); });
+                t.Header(h =>
+                {
+                    Encabezado(h.Cell(), "Canal");
+                    Encabezado(h.Cell(), "Ventas", derecha: true);
+                    Encabezado(h.Cell(), "Total", derecha: true);
+                });
+                foreach (var g in ventas.GroupBy(v => v.Canal).OrderBy(g => g.Key))
+                {
+                    Celda(t.Cell(), g.Key == "App" ? "App móvil (tienda online)" : "Caja (punto de venta)");
+                    Celda(t.Cell(), g.Count().ToString(), derecha: true);
+                    Celda(t.Cell(), Moneda(g.Sum(v => v.Total)), derecha: true);
+                }
+            });
+
             Subtitulo(col, "Productos más vendidos");
             col.Item().Table(t =>
             {
@@ -193,6 +212,7 @@ public class ReportesService
                     c.RelativeColumn(2.2f);
                     c.RelativeColumn(3);
                     c.RelativeColumn(2);
+                    c.RelativeColumn(1.1f);
                     c.RelativeColumn(1.2f);
                     c.RelativeColumn(2.2f);
                 });
@@ -201,7 +221,8 @@ public class ReportesService
                     Encabezado(h.Cell(), "N.º");
                     Encabezado(h.Cell(), "Fecha");
                     Encabezado(h.Cell(), "Cliente");
-                    Encabezado(h.Cell(), "Cajero");
+                    Encabezado(h.Cell(), "Usuario");
+                    Encabezado(h.Cell(), "Canal");
                     Encabezado(h.Cell(), "Unid.", derecha: true);
                     Encabezado(h.Cell(), "Total", derecha: true);
                 });
@@ -211,10 +232,11 @@ public class ReportesService
                     Celda(t.Cell(), ALocal(v.Fecha).ToString("dd/MM/yyyy HH:mm", Ar));
                     Celda(t.Cell(), v.Cliente);
                     Celda(t.Cell(), v.Cajero);
+                    Celda(t.Cell(), v.Canal);
                     Celda(t.Cell(), v.Unidades.ToString(), derecha: true);
                     Celda(t.Cell(), Moneda(v.Total), derecha: true);
                 }
-                FilaTotal(t, 6, Moneda(total));
+                FilaTotal(t, 7, Moneda(total));
             });
         });
 

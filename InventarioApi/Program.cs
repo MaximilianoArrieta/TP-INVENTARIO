@@ -22,6 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<ReportesService>();
 builder.Services.AddScoped<CorreoService>();
+builder.Services.AddScoped<VentaService>();
 builder.Services.AddHttpClient();
 
 // QuestPDF (reportes): licencia gratuita para uso académico / organizaciones chicas

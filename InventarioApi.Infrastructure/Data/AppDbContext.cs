@@ -28,6 +28,8 @@ public class AppDbContext : DbContext
     public DbSet<DetalleVenta> DetalleVentas => Set<DetalleVenta>();
     public DbSet<Auditoria> Auditorias => Set<Auditoria>();
     public DbSet<LogError> LogErrores => Set<LogError>();
+    public DbSet<MedioPago> MediosPago => Set<MedioPago>();
+    public DbSet<Pago> Pagos => Set<Pago>();
 
     // Permite cargar datos masivos (por ejemplo, los de demostración) sin auditar cada fila
     public bool AuditoriaDesactivada { get; set; }
@@ -127,7 +129,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Rol>().HasIndex(r => r.Nombre).IsUnique();
         modelBuilder.Entity<Rol>().HasData(
             new Rol { Id = 1, Nombre = "Admin" },
-            new Rol { Id = 2, Nombre = "Cajero" });
+            new Rol { Id = 2, Nombre = "Cajero" },
+            new Rol { Id = 3, Nombre = "Cliente" });
 
         modelBuilder.Entity<Usuario>()
             .HasIndex(u => u.NombreUsuario).IsUnique();
@@ -135,6 +138,39 @@ public class AppDbContext : DbContext
             .HasOne(u => u.Rol).WithMany(r => r.Usuarios)
             .HasForeignKey(u => u.RolId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Un usuario con rol Cliente queda vinculado a una única ficha de Clientes
+        modelBuilder.Entity<Usuario>()
+            .HasOne(u => u.Cliente).WithOne()
+            .HasForeignKey<Usuario>(u => u.ClienteId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Usuario>()
+            .HasIndex(u => u.ClienteId).IsUnique();
+
+        // Canal de la venta: las ventas existentes quedan como "Caja"
+        modelBuilder.Entity<Venta>()
+            .Property(v => v.Canal).HasMaxLength(20).HasDefaultValue(Venta.CanalCaja);
+
+        // Medios de pago de la tienda y pagos (simulados) de las ventas de la app
+        modelBuilder.Entity<MedioPago>().HasIndex(m => m.Nombre).IsUnique();
+        modelBuilder.Entity<MedioPago>().Property(m => m.Nombre).HasMaxLength(60);
+        modelBuilder.Entity<MedioPago>().HasData(
+            new MedioPago { Id = 1, Nombre = "Tarjeta de crédito", RequiereTarjeta = true, PermiteCuotas = true },
+            new MedioPago { Id = 2, Nombre = "Tarjeta de débito", RequiereTarjeta = true, PermiteCuotas = false },
+            new MedioPago { Id = 3, Nombre = "Billetera virtual", RequiereTarjeta = false, PermiteCuotas = false },
+            new MedioPago { Id = 4, Nombre = "Transferencia bancaria", RequiereTarjeta = false, PermiteCuotas = false });
+
+        modelBuilder.Entity<Pago>()
+            .HasOne(p => p.Venta).WithOne(v => v.Pago)
+            .HasForeignKey<Pago>(p => p.VentaId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Pago>().HasIndex(p => p.VentaId).IsUnique();
+        modelBuilder.Entity<Pago>()
+            .HasOne(p => p.MedioPago).WithMany(m => m.Pagos)
+            .HasForeignKey(p => p.MedioPagoId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Pago>().Property(p => p.UltimosDigitos).HasMaxLength(4);
+        modelBuilder.Entity<Pago>().Property(p => p.CodigoAutorizacion).HasMaxLength(12);
 
         // Evitar nombres de categoría duplicados
         modelBuilder.Entity<Categoria>()

@@ -10,4 +10,8 @@ public class Usuario
 
     public int RolId { get; set; }
     public Rol? Rol { get; set; }
+
+    // Solo para usuarios con rol Cliente (compradores de la app): su ficha de cliente
+    public int? ClienteId { get; set; }
+    public Cliente? Cliente { get; set; }
 }

@@ -21,6 +21,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageReference Include="MailKit" Version="4.18.1" />
     <PackageReference Include="QuestPDF" Version="2026.9.1" />
+    <!-- Versión corregida de una dependencia indirecta (aviso de vulnerabilidad) -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
   </ItemGroup>
 
   <ItemGroup>

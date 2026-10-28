@@ -23,6 +23,8 @@ public class AuthController : ControllerBase
 
     public record LoginDto(string NombreUsuario, string Password);
     public record RegistroDto(string NombreUsuario, string Password, string? Email);
+    public record RegistroClienteDto(string NombreUsuario, string Password, string Nombre, string Apellido,
+        string? Email, string? Telefono, string? Direccion);
 
     // Registro público: SIEMPRE crea un Cajero.
     // Los administradores se crean desde /api/usuarios (solo Admin).
@@ -45,6 +47,39 @@ public class AuthController : ControllerBase
         _db.Usuarios.Add(usuario);
         await _db.SaveChangesAsync();
         return Ok(new { usuario.Id, usuario.NombreUsuario, usuario.Email, Rol = rol.Nombre });
+    }
+
+    // Registro de compradores de la app móvil: crea su ficha de Cliente y un usuario con rol Cliente.
+    [HttpPost("registro-cliente")]
+    public async Task<IActionResult> RegistroCliente(RegistroClienteDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.NombreUsuario) || string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+            return BadRequest("El usuario es obligatorio y la contraseña debe tener al menos 6 caracteres.");
+        if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Apellido))
+            return BadRequest("Completá tu nombre y apellido.");
+        if (await _db.Usuarios.AnyAsync(u => u.NombreUsuario == dto.NombreUsuario))
+            return BadRequest("Ese nombre de usuario ya está en uso.");
+
+        var rol = await _db.Roles.FirstAsync(r => r.Nombre == "Cliente");
+        var cliente = new Cliente
+        {
+            Nombre = dto.Nombre.Trim(),
+            Apellido = dto.Apellido.Trim(),
+            Email = dto.Email?.Trim(),
+            Telefono = dto.Telefono?.Trim(),
+            Direccion = dto.Direccion?.Trim()
+        };
+        var usuario = new Usuario
+        {
+            NombreUsuario = dto.NombreUsuario.Trim(),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            Email = dto.Email?.Trim(),
+            RolId = rol.Id,
+            Cliente = cliente
+        };
+        _db.Usuarios.Add(usuario);
+        await _db.SaveChangesAsync();
+        return Ok(new { usuario.Id, usuario.NombreUsuario, usuario.Email, Rol = rol.Nombre, ClienteId = cliente.Id });
     }
 
     [HttpPost("login")]

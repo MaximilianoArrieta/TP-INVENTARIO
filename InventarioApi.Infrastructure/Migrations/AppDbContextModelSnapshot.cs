@@ -227,6 +227,99 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.ToTable("LogErrores");
                 });
 
+            modelBuilder.Entity("InventarioApi.Domain.Entities.MedioPago", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<bool>("PermiteCuotas")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiereTarjeta")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("MediosPago");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Nombre = "Tarjeta de crédito",
+                            PermiteCuotas = true,
+                            RequiereTarjeta = true
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Nombre = "Tarjeta de débito",
+                            PermiteCuotas = false,
+                            RequiereTarjeta = true
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Billetera virtual",
+                            PermiteCuotas = false,
+                            RequiereTarjeta = false
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Nombre = "Transferencia bancaria",
+                            PermiteCuotas = false,
+                            RequiereTarjeta = false
+                        });
+                });
+
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Pago", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodigoAutorizacion")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<int>("Cuotas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedioPagoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UltimosDigitos")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<int>("VentaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedioPagoId");
+
+                    b.HasIndex("VentaId")
+                        .IsUnique();
+
+                    b.ToTable("Pagos");
+                });
+
             modelBuilder.Entity("InventarioApi.Domain.Entities.Producto", b =>
                 {
                     b.Property<int>("Id")
@@ -322,6 +415,11 @@ namespace InventarioApi.Infrastructure.Migrations
                         {
                             Id = 2,
                             Nombre = "Cajero"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Nombre = "Cliente"
                         });
                 });
 
@@ -335,6 +433,9 @@ namespace InventarioApi.Infrastructure.Migrations
 
                     b.Property<bool>("Activo")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -352,6 +453,10 @@ namespace InventarioApi.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClienteId")
+                        .IsUnique()
+                        .HasFilter("[ClienteId] IS NOT NULL");
+
                     b.HasIndex("NombreUsuario")
                         .IsUnique();
 
@@ -367,6 +472,13 @@ namespace InventarioApi.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Canal")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Caja");
 
                     b.Property<int>("ClienteId")
                         .HasColumnType("int");
@@ -463,6 +575,25 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("InventarioApi.Domain.Entities.Pago", b =>
+                {
+                    b.HasOne("InventarioApi.Domain.Entities.MedioPago", "MedioPago")
+                        .WithMany("Pagos")
+                        .HasForeignKey("MedioPagoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InventarioApi.Domain.Entities.Venta", "Venta")
+                        .WithOne("Pago")
+                        .HasForeignKey("InventarioApi.Domain.Entities.Pago", "VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedioPago");
+
+                    b.Navigation("Venta");
+                });
+
             modelBuilder.Entity("InventarioApi.Domain.Entities.Producto", b =>
                 {
                     b.HasOne("InventarioApi.Domain.Entities.Categoria", "Categoria")
@@ -476,11 +607,18 @@ namespace InventarioApi.Infrastructure.Migrations
 
             modelBuilder.Entity("InventarioApi.Domain.Entities.Usuario", b =>
                 {
+                    b.HasOne("InventarioApi.Domain.Entities.Cliente", "Cliente")
+                        .WithOne()
+                        .HasForeignKey("InventarioApi.Domain.Entities.Usuario", "ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("InventarioApi.Domain.Entities.Rol", "Rol")
                         .WithMany("Usuarios")
                         .HasForeignKey("RolId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Cliente");
 
                     b.Navigation("Rol");
                 });
@@ -519,6 +657,11 @@ namespace InventarioApi.Infrastructure.Migrations
                     b.Navigation("Detalles");
                 });
 
+            modelBuilder.Entity("InventarioApi.Domain.Entities.MedioPago", b =>
+                {
+                    b.Navigation("Pagos");
+                });
+
             modelBuilder.Entity("InventarioApi.Domain.Entities.Producto", b =>
                 {
                     b.Navigation("DetallesCompra");
@@ -539,6 +682,8 @@ namespace InventarioApi.Infrastructure.Migrations
             modelBuilder.Entity("InventarioApi.Domain.Entities.Venta", b =>
                 {
                     b.Navigation("Detalles");
+
+                    b.Navigation("Pago");
                 });
 #pragma warning restore 612, 618
         }

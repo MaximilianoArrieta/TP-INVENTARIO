@@ -39,6 +39,7 @@ public class VentasController : ControllerBase
         public string Cliente { get; set; } = "";
         public int UsuarioId { get; set; }
         public string Usuario { get; set; } = "";
+        public string Canal { get; set; } = "";
         public decimal Total { get; set; }
         public List<LineaVentaVista> Detalles { get; set; } = new();
     }
@@ -67,6 +68,7 @@ public class VentasController : ControllerBase
             Cliente = v.Cliente!.Nombre + " " + v.Cliente.Apellido,
             UsuarioId = v.UsuarioId,
             Usuario = v.Usuario!.NombreUsuario,
+            Canal = v.Canal,
             Total = v.Detalles.Sum(d => d.Cantidad * d.PrecioUnitario),
             Detalles = v.Detalles.Select(d => new LineaVentaVista
             {
